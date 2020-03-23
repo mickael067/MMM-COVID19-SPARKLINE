@@ -13,6 +13,7 @@ Module.register("MMM-COVID19", {
   defaults: {
     header: 'COVID-19',    
     countries: [ "Argentina", "Italy", "Spain", "Germany" ], // default list
+    columns: ["confirmed", "deaths", "recovered", "active"], // default columns to display 
     orderCountriesByName: false,
     lastUpdateInfo: false,
     worldStats: false,
@@ -53,13 +54,18 @@ Module.register("MMM-COVID19", {
 
   socketNotificationReceived: function(notification, payload) {
     var self = this
+
     if (notification === "BYCOUNTRY_RESULT") {
       this.countriesStats = payload
       this.updateDom(self.config.fadeSpeed)
     }
-    if (notification === "GLOBAL_RESULT") {
+    else if (notification === "GLOBAL_RESULT") {
       this.globalStats = payload
       this.updateDom(self.config.fadeSpeed)
+    }
+    else if (notification === "BYCOUNTRY_HISTORY_RESULT") {
+      this.countryHistoryStats = payload;
+      this.updateDom(self.config.fadeSpeed);
     }
   },
 
@@ -85,6 +91,7 @@ Module.register("MMM-COVID19", {
         headeractiveCell = document.createElement("td")
 
     headerCountryNameCell.innerHTML = ''
+
     headerconfirmedCell.className = 'number confirmed ' + this.config.headerRowClass
     headerconfirmedCell.innerHTML = 'Confirmed'
     headerdeathsCell.className = 'number deaths ' + this.config.headerRowClass
@@ -95,10 +102,19 @@ Module.register("MMM-COVID19", {
     headeractiveCell.innerHTML = 'Active'
 
     headerRow.appendChild(headerCountryNameCell)
-    headerRow.appendChild(headerconfirmedCell)
-    headerRow.appendChild(headerdeathsCell)
-    headerRow.appendChild(headerrecoveredCell)
-    headerRow.appendChild(headeractiveCell)
+
+    if (this.config.columns.includes("confirmed")) {
+      headerRow.appendChild(headerconfirmedCell)
+    }
+    if (this.config.columns.includes("deaths")) { 
+      headerRow.appendChild(headerdeathsCell)
+    }
+    if (this.config.columns.includes("recovered")) {
+      headerRow.appendChild(headerrecoveredCell)
+    }
+    if (this.config.columns.includes("active")) {
+      headerRow.appendChild(headeractiveCell)
+    }
 
     wrapper.appendChild(headerRow)
     // WorldWide row, activate it via config
@@ -127,10 +143,19 @@ Module.register("MMM-COVID19", {
       activeCell.innerHTML = activeCases
 
       worldRow.appendChild(worldNameCell)
-      worldRow.appendChild(confirmedCell)
-      worldRow.appendChild(deathsCell)
-      worldRow.appendChild(recoveredCell)
-      worldRow.appendChild(activeCell)
+
+      if (this.config.columns.includes("confirmed")) {
+        worldRow.appendChild(confirmedCell);
+      }
+      if (this.config.columns.includes("deaths")) {
+        worldRow.appendChild(deathsCell);
+      }
+      if (this.config.columns.includes("recovered")) {
+        worldRow.appendChild(recoveredCell);
+      }
+      if (this.config.columns.includes("active")) {
+        worldRow.appendChild(activeCell);
+      }
       
       wrapper.appendChild(worldRow)
     }
@@ -162,10 +187,19 @@ Module.register("MMM-COVID19", {
         activeCell.innerHTML = activeCases
 
         countryRow.appendChild(countryNameCell)
-        countryRow.appendChild(confirmedCell)
-        countryRow.appendChild(deathsCell)
-        countryRow.appendChild(recoveredCell)
-        countryRow.appendChild(activeCell)
+
+        if (this.config.columns.includes("confirmed")) {
+          countryRow.appendChild(confirmedCell)
+        }
+        if (this.config.columns.includes("deaths")) {
+          countryRow.appendChild(deathsCell)
+        }
+        if (this.config.columns.includes("recovered")) {
+          countryRow.appendChild(recoveredCell)
+        }
+        if (this.config.columns.includes("active")) {
+          countryRow.appendChild(activeCell)
+        }
         
         wrapper.appendChild(countryRow)
       }

@@ -12,11 +12,14 @@ var request = require('request')
 
 var byCountryUrl = 'https://coronavirus-monitor.p.rapidapi.com/coronavirus/cases_by_country.php'
 var worldStatsUrl = 'https://coronavirus-monitor.p.rapidapi.com/coronavirus/worldstat.php'
+var byCountryHistoryUrl = 'https://coronavirus-monitor.p.rapidapi.com/coronavirus/cases_by_particular_country.php'
+
 
 module.exports = NodeHelper.create({
   start: function () {
     console.log('Starting node helper for: ' + this.name)
   },
+
   getGlobalStats: function(key) {
     var self = this
     var options = {
@@ -34,7 +37,8 @@ module.exports = NodeHelper.create({
       }
     })
   },
-  getStatsByCoutry: function(key) {
+
+  getStatsByCountry: function(key) {
     var self = this
     var options = {
       method: 'GET',
@@ -51,13 +55,35 @@ module.exports = NodeHelper.create({
       }
     })
   },
+
+  getHistoryByCountry: function(key) {
+    var self = this
+    var options = {
+      method: 'GET',
+      url: byCountryHistoryUrl,
+      headers: {
+        'x-rapidapi-host': 'coronavirus-monitor.p.rapidapi.com',
+        'x-rapidapi-key': key
+      }
+    }
+    request(options, function (error, response, body) {
+      if (!error && response.statusCode == 200) {
+        var result = JSON.parse(body)
+        self.sendSocketNotification('BYCOUNTRY_HISTORY_RESULT', result)
+      }
+    })
+  },
+
   //Subclass socketNotificationReceived received.
   socketNotificationReceived: function(notification, payload) {
     if (notification === 'GET_BY_COUNTRY_STATS') {
-      this.getStatsByCoutry(payload)
+      this.getStatsByCountry(payload)
     }
     if (notification === 'GET_GLOBAL_STATS') {
       this.getGlobalStats(payload)
+    }
+    if (notification === 'GET_BY_COUNTRY_HISTORY_STATS') {
+      this.getHistoryByCountry(payload)
     }
   }
   
