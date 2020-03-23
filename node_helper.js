@@ -79,10 +79,10 @@ module.exports = NodeHelper.create({
     if (notification === 'GET_BY_COUNTRY_STATS') {
       this.getStatsByCountry(payload)
     }
-    if (notification === 'GET_GLOBAL_STATS') {
+    else if (notification === 'GET_GLOBAL_STATS') {
       this.getGlobalStats(payload)
     }
-    if (notification === 'GET_BY_COUNTRY_HISTORY_STATS') {
+    else if (notification === 'GET_BY_COUNTRY_HISTORY_STATS') {
       this.getHistoryByCountry(payload)
     }
   }
