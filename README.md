@@ -40,6 +40,8 @@ The following properties can be configured:
 | `headerRowClass`             | The font size of the row headers <br><br> **Possible values:** `'small'`, `'medium'`, `'big'` <br> **Default value:** `'small'`
 | `infoRowClass`               | The font size of data <br><br> **Possible values:** `'small'`, `'medium'`, `'big'` <br> **Default value:** `'big'`
 | `updateInterval`             | How often does the content needs to be fetched? (Milliseconds) <br><br> **Possible values:** `1000` - `86400000` <br> **Default value:** `300000` (5 minutes)
+| `columns`                    | The columns you wish to be displayed.  **Possible values:** `[ "confirmed", "deaths", "recovered", "active" ]` <br> **Default value:** `[ "confirmed", "deaths", "recovered", "active" ]`
+
 
 ## Config Example
 

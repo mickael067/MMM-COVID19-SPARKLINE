@@ -218,6 +218,7 @@ Module.register("MMM-COVID19", {
 
 		return wrapper
   },
+  
   // sort according to some key and the order could be 'asc' or 'desc'
   compareValues: function(key, order = 'asc') {
     return function innerSort(a, b) {
