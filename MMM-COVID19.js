@@ -45,10 +45,15 @@ Module.register("MMM-COVID19", {
   },
 
   getInfo: function () {
-    this.sendSocketNotification('GET_BY_COUNTRY_STATS', this.config.rapidapiKey)
+    this.sendSocketNotification('GET_BY_COUNTRY_STATS', {'key':this.config.rapidapiKey, 'country':null})
 
     if (this.config.worldStats) {
-      this.sendSocketNotification('GET_GLOBAL_STATS', this.config.rapidapiKey)
+      this.sendSocketNotification('GET_GLOBAL_STATS', {'key':this.config.rapidapiKey, 'country':null})
+    }
+    if (this.config.graphHistory) {
+      for (var index=0; index<this.config.countries.length; index++) {
+        this.sendSocketNotification("GET_BY_COUNTRY_HISTORY_STATS", {'key':this.config.rapidapiKey, 'country':this.config.countries[index]});
+      }
     }
   },
 
@@ -65,6 +70,7 @@ Module.register("MMM-COVID19", {
     }
     else if (notification === "BYCOUNTRY_HISTORY_RESULT") {
       this.countryHistoryStats = payload;
+      console.log(this.countryHistoryStats);
       this.updateDom(self.config.fadeSpeed);
     }
   },
