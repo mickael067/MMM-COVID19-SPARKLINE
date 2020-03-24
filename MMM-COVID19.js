@@ -9,6 +9,7 @@
 
 Module.register("MMM-COVID19", {
   countriesStats: {},
+  countryHistoryStats: [],
   globalStats: { "total_cases": "", "total_deaths": "", "total_recovered": "" }, // beautify things at start
   defaults: {
     header: 'COVID-19',    
@@ -30,7 +31,8 @@ Module.register("MMM-COVID19", {
 
   getScripts: function() {
     return [
-      this.file("lib/highcharts.js")
+      this.file("lib/highcharts.js"), 
+      this.file("lib/date.min.js"),
     ];
   },
 
@@ -57,6 +59,7 @@ Module.register("MMM-COVID19", {
       this.sendSocketNotification('GET_GLOBAL_STATS', {'key':this.config.rapidapiKey, 'country':null})
     }
     if (this.config.graphHistory) {
+      /* fetch the historical data for all desired countries */
       for (var index=0; index<this.config.countries.length; index++) {
         this.sendSocketNotification("GET_BY_COUNTRY_HISTORY_STATS", {'key':this.config.rapidapiKey, 'country':this.config.countries[index]});
       }
@@ -75,8 +78,7 @@ Module.register("MMM-COVID19", {
       this.updateDom(self.config.fadeSpeed)
     }
     else if (notification === "BYCOUNTRY_HISTORY_RESULT") {
-      this.countryHistoryStats = payload;
-      console.log(this.countryHistoryStats);
+      this.countryHistoryStats.push(payload);
       this.updateDom(self.config.fadeSpeed);
     }
   },
@@ -85,12 +87,34 @@ Module.register("MMM-COVID19", {
     return this.config.header
   },
 
-  /* render chart */
-  getChart: function(series) {
-    // Create chart canvas
+  getNumberFromString: function(strnumber) {
+    return Number(strnumber.split(',').join(''));
+  },
+
+  /* render chart into DOM element */
+  /* rawdata = raw data from https://rapidapi.com/ API */
+  /* rawdata has two properties:
+   * 1. country
+   * 2. stat_by_country
+   */
+  getChart: function(rawdata) {
     var chart = document.createElement("div");
+    var plotseries = [{name: '', data:[]}];  /* empty series to get started */
     chart.id = "covid19-sparkline-chart";
+
+    if (rawdata == undefined)
+    {
+      return(chart.cloneNode(true));
+    }
+
     //chart.style.cssText = "float: right;";
+    /* create a new series object given the raw data */
+    /* we have to separate the junk in the raw data */
+    for (var i=0; i<rawdata.stat_by_country.length; i++)
+    {
+      t = Date.parse(rawdata.stat_by_country[i].record_date);
+      plotseries[0].data.push([t.valueOf(), this.getNumberFromString( rawdata.stat_by_country[i].total_cases ) ]);
+    }
 
     /* render directly to chart div */
     Highcharts.chart(chart, {
@@ -101,7 +125,7 @@ Module.register("MMM-COVID19", {
         type: 'area',
         margin: [2, 0, 2, 0],
         width: 120,
-        height: 20,
+        height: 30,
         style: {
           overflow: 'visible'
         },
@@ -129,12 +153,9 @@ Module.register("MMM-COVID19", {
           },
           fillOpacity: 0.25
         },
-        column: {
-            negativeColor: '#910000',
-            borderColor: 'silver'
-        }
       },
       xAxis: {
+        type: 'datetime',
         labels: {
             enabled: false
         },
@@ -156,7 +177,7 @@ Module.register("MMM-COVID19", {
           },
           tickPositions: [0]
       },
-      series: series,
+      series: plotseries,
       credits: {
         enabled: false
       },
@@ -165,7 +186,8 @@ Module.register("MMM-COVID19", {
       },
       legend: {
         enabled: false
-      }
+      },
+      colors: ["#00F", "#F00"]
     });
 
     return chart.cloneNode(true);
@@ -174,7 +196,9 @@ Module.register("MMM-COVID19", {
   getDom: function() {
     var countriesList = this.config.countries
     var countriesStats = this.countriesStats["countries_stat"]
+    var countryHistoryStats = this.countryHistoryStats;
     var globalStats = this.globalStats
+
     if (this.config.orderCountriesByName && countriesStats) {
       countriesStats.sort(this.compareValues('country_name'))
     }
@@ -317,7 +341,18 @@ Module.register("MMM-COVID19", {
           countryRow.appendChild(activeCell)
         }
         if (this.config.graphHistory == true) {
-          graphCell.appendChild(this.getChart([{name:'foo', data:[1,4,244,23,3,2,20,32,3,4,4], pointStart: 1}]));
+          /* find the history data with the correct name */
+          /* and plot the contents */
+          for (i=0; i<countryHistoryStats.length; i++)
+          {
+            if (countryHistoryStats[i].country == countryName)
+            {
+              graphCell.appendChild(this.getChart(countryHistoryStats[i]));
+              console.log(countryName);
+              console.log(countryHistoryStats[i]);
+              break;
+            }
+          }
           countryRow.appendChild(graphCell);
         }        
 
