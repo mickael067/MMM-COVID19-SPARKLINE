@@ -28,6 +28,12 @@ Module.register("MMM-COVID19", {
     return ["MMM-COVID19.css"]
   },
 
+  getScripts: function() {
+    return [
+      this.file("lib/highcharts.js")
+    ];
+  },
+
   start: function() {
     this.getInfo()
     this.scheduleUpdate()
@@ -79,11 +85,99 @@ Module.register("MMM-COVID19", {
     return this.config.header
   },
 
+  /* render chart */
+  getChart: function(series) {
+    // Create chart canvas
+    var chart = document.createElement("div");
+    chart.id = "covid19-sparkline-chart";
+    //chart.style.cssText = "float: right;";
+
+    /* render directly to chart div */
+    Highcharts.chart(chart, {
+      title: {
+        text: '',
+      },
+      chart: {
+        type: 'area',
+        margin: [2, 0, 2, 0],
+        width: 120,
+        height: 20,
+        style: {
+          overflow: 'visible'
+        },
+        backgroundColor: null,
+        borderWidth: 0,
+        plotShadow: false,
+      },
+      plotOptions: {
+        series: {
+          animation: false,
+          lineWidth: 1,
+          shadow: false,
+          states: {
+              hover: {
+                  lineWidth: 1
+              }
+          },
+          marker: {
+              radius: 1,
+              states: {
+                  hover: {
+                      radius: 2
+                  }
+              }
+          },
+          fillOpacity: 0.25
+        },
+        column: {
+            negativeColor: '#910000',
+            borderColor: 'silver'
+        }
+      },
+      xAxis: {
+        labels: {
+            enabled: false
+        },
+        title: {
+            text: null
+        },
+        startOnTick: false,
+        endOnTick: false,
+        tickPositions: []
+      },
+      yAxis: {
+          endOnTick: false,
+          startOnTick: false,
+          labels: {
+              enabled: false
+          },
+          title: {
+              text: null
+          },
+          tickPositions: [0]
+      },
+      series: series,
+      credits: {
+        enabled: false
+      },
+      tooltip: {
+        enabled: false
+      },
+      legend: {
+        enabled: false
+      }
+    });
+
+    return chart.cloneNode(true);
+  },
+
   getDom: function() {
     var countriesList = this.config.countries
     var countriesStats = this.countriesStats["countries_stat"]
     var globalStats = this.globalStats
-    if (this.config.orderCountriesByName && countriesStats) countriesStats.sort(this.compareValues('country_name'))
+    if (this.config.orderCountriesByName && countriesStats) {
+      countriesStats.sort(this.compareValues('country_name'))
+    }
     
     var wrapper = document.createElement("table")
     wrapper.className = this.config.tableClass || 'covid'
@@ -94,7 +188,8 @@ Module.register("MMM-COVID19", {
         headerCountryNameCell = document.createElement("td"),
         headerrecoveredCell = document.createElement("td"),
         headerdeathsCell = document.createElement("td"),
-        headeractiveCell = document.createElement("td")
+        headeractiveCell = document.createElement("td"),
+        headergraphCell = document.createElement("td")
 
     headerCountryNameCell.innerHTML = ''
 
@@ -106,6 +201,8 @@ Module.register("MMM-COVID19", {
     headerrecoveredCell.innerHTML = 'Recovered'
     headeractiveCell.className = 'number active ' + this.config.headerRowClass
     headeractiveCell.innerHTML = 'Active'
+    headergraphCell.className = 'number ' + this.config.headerRowClass
+    headergraphCell.innerHTML = 'Plot'
 
     headerRow.appendChild(headerCountryNameCell)
 
@@ -121,8 +218,12 @@ Module.register("MMM-COVID19", {
     if (this.config.columns.includes("active")) {
       headerRow.appendChild(headeractiveCell)
     }
+    if (this.config.graphHistory == true) {
+      headerRow.appendChild(headergraphCell);
+    }
 
     wrapper.appendChild(headerRow)
+
     // WorldWide row, activate it via config
     if (this.config.worldStats) {
       let worldRow = document.createElement("tr"),
@@ -131,6 +232,7 @@ Module.register("MMM-COVID19", {
           deathsCell = document.createElement("td"),
           recoveredCell = document.createElement("td"),
           activeCell = document.createElement("td"),
+          graphCell = document.createElement("td"),
           cases = globalStats["total_cases"],
           deaths = globalStats["total_deaths"],
           totalRecovered = globalStats["total_recovered"],
@@ -147,6 +249,8 @@ Module.register("MMM-COVID19", {
       recoveredCell.innerHTML = totalRecovered
       activeCell.className = 'number active ' + this.config.infoRowClass
       activeCell.innerHTML = activeCases
+      graphCell.className = ''
+      graphCell.innerHTML = ''
 
       worldRow.appendChild(worldNameCell)
 
@@ -162,9 +266,13 @@ Module.register("MMM-COVID19", {
       if (this.config.columns.includes("active")) {
         worldRow.appendChild(activeCell);
       }
-      
+      if (this.config.graphHistory == true) {
+        worldRow.appendChild(graphCell);
+      }
+
       wrapper.appendChild(worldRow)
     }
+
     // countries row, one per country listed at config => countries
     for (let key in countriesStats) {
       let value = countriesStats[key]
@@ -175,6 +283,7 @@ Module.register("MMM-COVID19", {
             deathsCell = document.createElement("td"),
             recoveredCell = document.createElement("td"),
             activeCell = document.createElement("td"),
+            graphCell = document.createElement("td"),
             countryName = value["country_name"],
             cases = value["cases"],
             deaths = value["deaths"],
@@ -191,6 +300,7 @@ Module.register("MMM-COVID19", {
         recoveredCell.innerHTML = totalRecovered
         activeCell.className = 'number active ' + this.config.infoRowClass
         activeCell.innerHTML = activeCases
+        graphCell.className = 'sparkline'
 
         countryRow.appendChild(countryNameCell)
 
@@ -206,8 +316,12 @@ Module.register("MMM-COVID19", {
         if (this.config.columns.includes("active")) {
           countryRow.appendChild(activeCell)
         }
-        
-        wrapper.appendChild(countryRow)
+        if (this.config.graphHistory == true) {
+          graphCell.appendChild(this.getChart([{name:'foo', data:[1,4,244,23,3,2,20,32,3,4,4], pointStart: 1}]));
+          countryRow.appendChild(graphCell);
+        }        
+
+        wrapper.appendChild(countryRow);
       }
     }
     if (this.config.lastUpdateInfo) {

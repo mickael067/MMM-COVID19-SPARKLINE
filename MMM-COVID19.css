@@ -22,6 +22,10 @@
   color: red;
 }
 
+.covid td.sparkline {
+  font-size: 0;
+}
+
 .covid td.active {
   color: orange;
 }
