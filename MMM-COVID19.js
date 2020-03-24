@@ -187,7 +187,7 @@ Module.register("MMM-COVID19", {
       legend: {
         enabled: false
       },
-      colors: ["#00F", "#F00"]
+      colors: ["#DEECFA", "#F00"]
     });
 
     return chart.cloneNode(true);
