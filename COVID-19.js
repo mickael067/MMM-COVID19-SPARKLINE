@@ -21,7 +21,7 @@ class Covid19 {
   }
 
   extractRegionKey(obj) {
-    return obj["Country/Region"].trim() + ":" + obj["Province/State"].trim()
+    return obj["Country_Region"].trim() + ":" + obj["Province_State"].trim()
   }
 
   scan(finish=()=>{}) {
@@ -31,7 +31,7 @@ class Covid19 {
     var ci = new Set()
     var pi = []
     var latest = lastDay.format("MM-DD-YYYY") + ".csv"
-    var days = [30,29,28,27,26,25,24,23,22,21,20,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0].map((d)=>{
+    var days = [6,5,4,3,2,1,0].map((d)=>{
       return moment(lastDay).subtract(d, "day").format("M/D/YY")
     })
     var initSeries = () => {
@@ -70,8 +70,8 @@ class Covid19 {
       // latest daily totals
       for (var r of jsonObj) {
         var key = this.extractRegionKey(r)
-        var ps = r["Province/State"].trim()
-        var cr = r["Country/Region"].trim()
+        var ps = r["Province_State"].trim()
+        var cr = r["Country_Region"].trim()
 
         regions[key] = {
           key: key,
