@@ -2,6 +2,10 @@ const GithubContent = require('github-content')
 const C2J = require('csvtojson')
 const moment = require('moment')
 
+class CovidSeries {
+  confirmed = 0;
+  deaths = 0;
+}
 
 class Covid19 {
   constructor(options=null) {
@@ -35,24 +39,14 @@ class Covid19 {
     var ci = new Set()
     var pi = []
     var latest = lastDay.format("MM-DD-YYYY") + ".csv"
-    var days = [6,5,4,3,2,1,0].map((d)=>{
-      return moment(lastDay).subtract(d, "day").format("M/D/YY")
-    })
     var initSeries = () => {
-      var ret = {}
-      for (var i of days) {
-        ret[i] = {
-          confirmed:0,
-          deaths:0,
-          recovered:0
-        }
-      }
+      var ret = {};
       return ret
     }
     var sources = [
-      'csse_covid_19_data/csse_covid_19_daily_reports/' + latest,
       'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv',
       'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv',
+      'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_recovered_global.csv'
     ]
     var gc = new GithubContent(this.repo)
 
@@ -62,30 +56,28 @@ class Covid19 {
         this.log("Error:", err)
         finish({error:err})
       }
-      var lastUpdates = files.find((f)=>{return f.path == sources[0]})  /* latest daily */
-      var confirmed = files.find((f)=>{return f.path == sources[1]})    /* confirmed timeseries */
-      var deaths = files.find((f)=>{return f.path == sources[2]})       /* deaths timeseries */
-      var recovered = files.find((f)=>{return f.path == sources[3]})    /* recovered timeseries */
+      var confirmed = files.find((f)=>{return f.path == sources[0]})    /* confirmed timeseries */
+      var deaths = files.find((f)=>{return f.path == sources[1]})       /* deaths timeseries */
 
-      var csvtxt = lastUpdates.contents.toString()
+      var csvtxt = confirmed.contents.toString()
       var jsonObj = await C2J().fromString(csvtxt)
 
       // latest daily totals
       for (var r of jsonObj) {
-        var key = this.extractRegionKey_uscore(r)
-        var ps = r["Province_State"].trim()
-        var cr = r["Country_Region"].trim()
+        var key = this.extractRegionKey_slash(r)
+        var ps = r["Province/State"].trim()
+        var cr = r["Country/Region"].trim()
 
         regions[key] = {
           key: key,
-          lastupdate: Number(moment(r["Last_Update"]).format("x")),
-          lastseries: Number(lastDay.format("x")),
+          //lastupdate: Number(moment(r["Last_Update"]).format("x")),
+          //lastseries: Number(lastDay.format("x")),
           name: ((ps && ps.trim() !== cr.trim()) ? `${ps}, ${cr}` : cr),
           provincestate: ps,
           countryregion: cr,
-          latitude: Number(r.Latitude),
-          longitude: Number(r.Longitude),
-          series:initSeries(days),
+          latitude: Number(r.Lat),
+          longitude: Number(r.Long),
+          series: [],
         }
       }
       
@@ -93,11 +85,22 @@ class Covid19 {
         return new Promise((resolve, reject)=>{
           for (var r of obj) {
             var rkey = this.extractRegionKey_slash(r)
-            if (!regions.hasOwnProperty(rkey)) continue
+            if (!regions.hasOwnProperty(rkey)) {
+              console.log("can't find property", rkey);
+              continue;
+            }
             var headers = Object.keys(r)
-            for (var i = 0; i < days.length; i++) {
-              var dkey = days[i]
-              regions[rkey].series[dkey][type] = Number(r[dkey])
+
+            /* get all days available; first day is column 4 */
+            for (var i=4; i<headers.length; i++)
+            {
+              var dkey = headers[i];
+              /* init with new series if it doesn't exist */
+              if (regions[rkey].series[dkey] == undefined)
+              {
+                regions[rkey].series[dkey] = new CovidSeries();
+              }
+              regions[rkey].series[dkey][type] = Number(r[dkey]);
             }
           }
           resolve()
@@ -106,16 +109,12 @@ class Covid19 {
 
       var step = async()=>{
         var cjo = await C2J().fromString(confirmed.contents.toString())
-        this.log("Resolving:", files[1].path)
+        this.log("Resolving:", files[0].path)
         await parse(cjo, "confirmed")
 
         var djo = await C2J().fromString(deaths.contents.toString())
-        this.log("Resolving:", files[2].path)
+        this.log("Resolving:", files[1].path)
         await parse(djo, "deaths")
-
-        var rjo = await C2J().fromString(recovered.contents.toString())
-        this.log("Resolving:", files[3].path)
-        await parse(rjo, "recovered")
       }
 
       await step()
@@ -124,7 +123,6 @@ class Covid19 {
       finish({
         data: Object.values(regions),
         reportTime: lastDay.format('x'),
-        seriesKey: days,
       })
     })
   }
