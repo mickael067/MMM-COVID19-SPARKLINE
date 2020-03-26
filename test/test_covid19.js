@@ -50,7 +50,10 @@ describe('Covid', function() {
       it('should perform a scan', async function() {
         var result;
         testCovid19.scan((result)=>{
-          console.log(result);
+          console.log("here");
+          console.log(result.data[0].key);
+          console.log(result.data[0].series["1/22/20"]);
+          //console.log(result);
         });
       });
 

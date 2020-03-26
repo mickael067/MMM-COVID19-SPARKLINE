@@ -53,32 +53,15 @@ Module.register("MMM-COVID19", {
   },
 
   getInfo: function () {
-    this.sendSocketNotification('GET_BY_COUNTRY_STATS', {'key':this.config.rapidapiKey, 'country':null})
-
-    if (this.config.worldStats) {
-      this.sendSocketNotification('GET_GLOBAL_STATS', {'key':this.config.rapidapiKey, 'country':null})
-    }
-    if (this.config.graphHistory) {
-      /* fetch the historical data for all desired countries */
-      for (var index=0; index<this.config.countries.length; index++) {
-        this.sendSocketNotification("GET_BY_COUNTRY_HISTORY_STATS", {'key':this.config.rapidapiKey, 'country':this.config.countries[index]});
-      }
-    }
+    this.sendSocketNotification('GET_GLOBAL_STATS');
   },
 
   socketNotificationReceived: function(notification, payload) {
     var self = this
 
-    if (notification === "BYCOUNTRY_RESULT") {
-      this.countriesStats = payload
-      this.updateDom(self.config.fadeSpeed)
-    }
-    else if (notification === "GLOBAL_RESULT") {
-      this.globalStats = payload
-      this.updateDom(self.config.fadeSpeed)
-    }
-    else if (notification === "BYCOUNTRY_HISTORY_RESULT") {
-      this.countryHistoryStats.push(payload);
+    if (notification === "GLOBAL_RESULT") {
+      console.log(payload);
+      this.globalStats = payload;
       this.updateDom(self.config.fadeSpeed);
     }
   },
@@ -193,11 +176,14 @@ Module.register("MMM-COVID19", {
     return chart.cloneNode(true);
   },
 
+  getSummarizedStats: function() {
+
+
+  },
+
   getDom: function() {
-    var countriesList = this.config.countries
-    var countriesStats = this.countriesStats["countries_stat"]
-    var countryHistoryStats = this.countryHistoryStats;
-    var globalStats = this.globalStats
+    var countriesList = this.config.countries;  // countries the user wants
+    var globalStats = this.globalStats;         // the global stats for all countries
 
     if (this.config.orderCountriesByName && countriesStats) {
       countriesStats.sort(this.compareValues('country_name'))

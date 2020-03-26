@@ -2,11 +2,6 @@ const GithubContent = require('github-content')
 const C2J = require('csvtojson')
 const moment = require('moment')
 
-class CovidSeries {
-  confirmed = 0;
-  deaths = 0;
-}
-
 class Covid19 {
   constructor(options=null) {
     this.regions = {}
@@ -77,7 +72,7 @@ class Covid19 {
           countryregion: cr,
           latitude: Number(r.Lat),
           longitude: Number(r.Long),
-          series: [],
+          series: {},
         }
       }
       
@@ -98,7 +93,7 @@ class Covid19 {
               /* init with new series if it doesn't exist */
               if (regions[rkey].series[dkey] == undefined)
               {
-                regions[rkey].series[dkey] = new CovidSeries();
+                regions[rkey].series[dkey] = {};
               }
               regions[rkey].series[dkey][type] = Number(r[dkey]);
             }
