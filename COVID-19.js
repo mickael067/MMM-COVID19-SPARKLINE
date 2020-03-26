@@ -20,8 +20,12 @@ class Covid19 {
     }
   }
 
-  extractRegionKey(obj) {
+  extractRegionKey_uscore(obj) {
     return obj["Country_Region"].trim() + ":" + obj["Province_State"].trim()
+  }
+
+  extractRegionKey_slash(obj) {
+    return obj["Country/Region"].trim() + ":" + obj["Province/State"].trim()
   }
 
   scan(finish=()=>{}) {
@@ -47,9 +51,8 @@ class Covid19 {
     }
     var sources = [
       'csse_covid_19_data/csse_covid_19_daily_reports/' + latest,
-      'csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Confirmed.csv',
-      'csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Deaths.csv',
-      'csse_covid_19_data/csse_covid_19_time_series/time_series_19-covid-Recovered.csv',
+      'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv',
+      'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv',
     ]
     var gc = new GithubContent(this.repo)
 
@@ -69,13 +72,13 @@ class Covid19 {
 
       // latest daily totals
       for (var r of jsonObj) {
-        var key = this.extractRegionKey(r)
+        var key = this.extractRegionKey_uscore(r)
         var ps = r["Province_State"].trim()
         var cr = r["Country_Region"].trim()
 
         regions[key] = {
           key: key,
-          lastupdate: Number(moment(r["Last Update"]).format("x")),
+          lastupdate: Number(moment(r["Last_Update"]).format("x")),
           lastseries: Number(lastDay.format("x")),
           name: ((ps && ps.trim() !== cr.trim()) ? `${ps}, ${cr}` : cr),
           provincestate: ps,
@@ -89,7 +92,7 @@ class Covid19 {
       const parse = (obj, type) => {
         return new Promise((resolve, reject)=>{
           for (var r of obj) {
-            var rkey = this.extractRegionKey(r)
+            var rkey = this.extractRegionKey_slash(r)
             if (!regions.hasOwnProperty(rkey)) continue
             var headers = Object.keys(r)
             for (var i = 0; i < days.length; i++) {
