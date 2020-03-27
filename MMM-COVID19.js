@@ -60,7 +60,7 @@ Module.register("MMM-COVID19", {
     var self = this
 
     if (notification === "GLOBAL_RESULT") {
-      console.log(payload);
+      //console.log(payload);
       this.globalStats = payload;
       this.updateDom(self.config.fadeSpeed);
     }
@@ -81,7 +81,7 @@ Module.register("MMM-COVID19", {
    */
   getChart: function(rawdata) {
     var chart = document.createElement("div");
-    var plotseries = [{name: '', data:[]}];  /* empty series to get started */
+    var plotseries = [{name: '', data:[]}, {name: '', data:[]}, {name: '', data:[]}];  /* empty series to get started */
     chart.id = "covid19-sparkline-chart";
 
     if (rawdata == undefined)
@@ -91,11 +91,14 @@ Module.register("MMM-COVID19", {
 
     dates = Object.keys(rawdata.series);
 
+
     /* create a new series object given the raw data */
     for (var i=0; i<dates.length; i++)
     {
       var d = Date.parse(dates[i]);
       plotseries[0].data.push([d.valueOf(), rawdata.series[dates[i]].confirmed]);
+      plotseries[1].data.push([d.valueOf(), rawdata.series[dates[i]].recovered]);
+      plotseries[2].data.push([d.valueOf(), rawdata.series[dates[i]].deaths]);
     }
 
     /* render directly to chart div */
@@ -111,18 +114,18 @@ Module.register("MMM-COVID19", {
         style: {
           overflow: 'visible'
         },
-        backgroundColor: null,
+        backgroundColor: 'transparent',
         borderWidth: 0,
         plotShadow: false,
       },
       plotOptions: {
         series: {
           animation: false,
-          lineWidth: 2,
+          lineWidth: 0.25,
           shadow: false,
           states: {
               hover: {
-                  lineWidth: 1
+                  lineWidth: 0,
               }
           },
           marker: {
@@ -138,27 +141,10 @@ Module.register("MMM-COVID19", {
       },
       xAxis: {
         type: 'datetime',
-        labels: {
-            enabled: false
-        },
-        title: {
-            text: null
-        },
         visible: false,
-        startOnTick: false,
-        endOnTick: false,
-        tickPositions: []
       },
       yAxis: {
-          endOnTick: false,
-          startOnTick: false,
-          labels: {
-              enabled: false
-          },
-          title: {
-              text: null
-          },
-          tickPositions: [0]
+          visible: false,
       },
       series: plotseries,
       credits: {
@@ -170,7 +156,7 @@ Module.register("MMM-COVID19", {
       legend: {
         enabled: false
       },
-      colors: ["#DEECFA", "#F00"]
+      colors: ["#DEECFA", "#0F0", "#F00"]
     });
 
     return chart.cloneNode(true);
@@ -186,7 +172,7 @@ Module.register("MMM-COVID19", {
   /* provided empty string, will get summary for all countries */
   getSummarizedStats: function(country) {
     var globalStats = this.globalStats;
-    var result = {confirmed:0, deaths:0};
+    var result = {confirmed:0, deaths:0, recovered:0};
 
     if (globalStats.data == undefined) {
       return;
@@ -204,6 +190,7 @@ Module.register("MMM-COVID19", {
         maxdatestring = this.getLastDateInSeries(Object.keys(globalStats.data[keys[i]].series));
         result.confirmed += globalStats.data[keys[i]].series[maxdatestring].confirmed;
         result.deaths += globalStats.data[keys[i]].series[maxdatestring].deaths;
+        result.recovered += globalStats.data[keys[i]].series[maxdatestring].recovered;
       }
     }
 
@@ -231,17 +218,18 @@ Module.register("MMM-COVID19", {
     for (var i=0; i<keys.length; i++)
     {
       if (keys[i].includes(country)) {
-        console.log("getSummaryRow:", keys[i]);
+        //console.log("getSummaryRow:", keys[i]);
         dates = Object.keys(globalStats.data[keys[i]].series);
         for (d=0; d<dates.length; d++)
         {
           thisdaysdata = globalStats.data[keys[i]].series[dates[d]];
           if (summaryrow.series[dates[d]] == undefined) {
-            summaryrow.series[dates[d]] = {confirmed:thisdaysdata.confirmed, deaths:thisdaysdata.deaths};
+            summaryrow.series[dates[d]] = {confirmed:thisdaysdata.confirmed, deaths:thisdaysdata.deaths, recovered:thisdaysdata.recovered};
           }
           else {
             summaryrow.series[dates[d]].confirmed += thisdaysdata.confirmed;
             summaryrow.series[dates[d]].deaths += thisdaysdata.deaths;
+            summaryrow.series[dates[d]].recovered += thisdaysdata.recovered;
           }
         }
       }
@@ -254,7 +242,8 @@ Module.register("MMM-COVID19", {
     var globalStats = this.globalStats;         // the global stats for all countries
 
     var wrapper = document.createElement("table")
-    wrapper.className = this.config.tableClass || 'covid'
+    wrapper.className = this.config.tableClass || 'covid';
+
 
     // header row
     var headerRow = document.createElement("tr"),
@@ -299,35 +288,41 @@ Module.register("MMM-COVID19", {
     wrapper.appendChild(headerRow)
 
     // WorldWide row, activate it via config
-    if (this.config.worldStats) {
-
+    if ((this.config.worldStats) && (globalStats.worldwide != undefined)){
       lastdate = this.getLastDateInSeries(Object.keys(globalStats.worldwide.series));
 
       let worldRow = document.createElement("tr"),
           worldNameCell = document.createElement("td"),
           confirmedCell = document.createElement("td"),
+          
           deathsCell = document.createElement("td"),
           recoveredCell = document.createElement("td"),
           activeCell = document.createElement("td"),
           graphCell = document.createElement("td"),
+
           cases = globalStats.worldwide.series[lastdate].confirmed,
           deaths = globalStats.worldwide.series[lastdate].deaths,
           recovered = globalStats.worldwide.series[lastdate].recovered,
           activeCases = cases - deaths - recovered;
 
-      console.log(globalStats);
+      //console.log(globalStats);
 
       worldNameCell.innerHTML = 'Worldwide'
       worldNameCell.className = this.config.infoRowClass
       worldRow.className = 'world ' + this.config.infoRowClass
+
       confirmedCell.className = 'number confirmed ' + this.config.infoRowClass
       confirmedCell.innerHTML = cases
+
       deathsCell.className = 'number deaths ' + this.config.infoRowClass
       deathsCell.innerHTML = deaths
+
       recoveredCell.className = 'number recovered ' + this.config.infoRowClass
       recoveredCell.innerHTML = recovered
+
       activeCell.className = 'number active ' + this.config.infoRowClass
       activeCell.innerHTML = activeCases
+
       graphCell.className = ''
       graphCell.innerHTML = ''
 
@@ -358,7 +353,7 @@ Module.register("MMM-COVID19", {
       if (globalStats.data != undefined) {
         let countryName = countriesList[i];
         let stats = this.getSummarizedStats(countryName);   /* calculated statistics */
-        console.log(stats);
+        ////console.log(stats);
 
         let countryRow = document.createElement("tr"),
             countryNameCell = document.createElement("td"),
@@ -370,7 +365,7 @@ Module.register("MMM-COVID19", {
 
             cases = stats.confirmed;
             deaths = stats.deaths;
-            recovered = 0;
+            recovered = stats.recovered;
             active = cases-deaths-recovered;;
 
         countryNameCell.innerHTML = countryName;
@@ -403,7 +398,7 @@ Module.register("MMM-COVID19", {
           /* find the history data with the correct name */
           /* and plot the contents */
           var summaryrow = this.getSummaryRow(countryName);
-          console.log(summaryrow);
+          //console.log(summaryrow);
           graphCell.appendChild(this.getChart(summaryrow));
           countryRow.appendChild(graphCell);
         }        
