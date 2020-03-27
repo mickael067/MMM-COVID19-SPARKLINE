@@ -118,7 +118,7 @@ Module.register("MMM-COVID19", {
       plotOptions: {
         series: {
           animation: false,
-          lineWidth: 1,
+          lineWidth: 2,
           shadow: false,
           states: {
               hover: {
@@ -126,7 +126,7 @@ Module.register("MMM-COVID19", {
               }
           },
           marker: {
-              radius: 1,
+              radius: 0,
               states: {
                   hover: {
                       radius: 2
@@ -144,6 +144,7 @@ Module.register("MMM-COVID19", {
         title: {
             text: null
         },
+        visible: false,
         startOnTick: false,
         endOnTick: false,
         tickPositions: []
@@ -175,19 +176,9 @@ Module.register("MMM-COVID19", {
     return chart.cloneNode(true);
   },
 
-  /* given a list of dates, figure out the largest one */
+  /* given a list of dates, get the value of the last one */
   getLastDateInSeries: function(dates) {
-    maxdate = Date.parse("1/1/1970");  //a starting max value that I know will be exceeded
-    for (var i=0; i<dates.length; i++)
-    {
-      thisdate = Date.parse(dates[i]);
-      thisdatestring = dates[i];
-
-      if (thisdate > maxdate) {
-        maxdate = thisdate;
-        maxdatestring = thisdatestring;
-      }
-    }
+    maxdatestring = dates[dates.length-1];
     return maxdatestring;
   },
 
@@ -310,6 +301,8 @@ Module.register("MMM-COVID19", {
     // WorldWide row, activate it via config
     if (this.config.worldStats) {
 
+      lastdate = this.getLastDateInSeries(Object.keys(globalStats.worldwide.series));
+
       let worldRow = document.createElement("tr"),
           worldNameCell = document.createElement("td"),
           confirmedCell = document.createElement("td"),
@@ -317,10 +310,12 @@ Module.register("MMM-COVID19", {
           recoveredCell = document.createElement("td"),
           activeCell = document.createElement("td"),
           graphCell = document.createElement("td"),
-          cases = globalStats["total_cases"],
-          deaths = globalStats["total_deaths"],
-          totalRecovered = globalStats["total_recovered"],
-          activeCases = '';
+          cases = globalStats.worldwide.series[lastdate].confirmed,
+          deaths = globalStats.worldwide.series[lastdate].deaths,
+          recovered = globalStats.worldwide.series[lastdate].recovered,
+          activeCases = cases - deaths - recovered;
+
+      console.log(globalStats);
 
       worldNameCell.innerHTML = 'Worldwide'
       worldNameCell.className = this.config.infoRowClass
@@ -330,7 +325,7 @@ Module.register("MMM-COVID19", {
       deathsCell.className = 'number deaths ' + this.config.infoRowClass
       deathsCell.innerHTML = deaths
       recoveredCell.className = 'number recovered ' + this.config.infoRowClass
-      recoveredCell.innerHTML = totalRecovered
+      recoveredCell.innerHTML = recovered
       activeCell.className = 'number active ' + this.config.infoRowClass
       activeCell.innerHTML = activeCases
       graphCell.className = ''
@@ -351,6 +346,7 @@ Module.register("MMM-COVID19", {
         worldRow.appendChild(activeCell);
       }
       if (this.config.graphHistory == true) {
+        graphCell.appendChild(this.getChart(globalStats.worldwide));
         worldRow.appendChild(graphCell);
       }
 

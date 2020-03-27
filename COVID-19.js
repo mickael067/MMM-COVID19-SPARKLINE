@@ -31,13 +31,7 @@ class Covid19 {
     this.log("Scan starts.")
     var lastDay = moment.utc().add(-1, "day").startOf("day")
     var regions = {}
-    var ci = new Set()
-    var pi = []
-    var latest = lastDay.format("MM-DD-YYYY") + ".csv"
-    var initSeries = () => {
-      var ret = {};
-      return ret
-    }
+
     var sources = [
       'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_confirmed_global.csv',
       'csse_covid_19_data/csse_covid_19_time_series/time_series_covid19_deaths_global.csv',
@@ -53,6 +47,7 @@ class Covid19 {
       }
       var confirmed = files.find((f)=>{return f.path == sources[0]})    /* confirmed timeseries */
       var deaths = files.find((f)=>{return f.path == sources[1]})       /* deaths timeseries */
+      var recovered = files.find((f)=>{return f.path == sources[2]})    /* recovered timeseries */
 
       var csvtxt = confirmed.contents.toString()
       var jsonObj = await C2J().fromString(csvtxt)
@@ -65,8 +60,6 @@ class Covid19 {
 
         regions[key] = {
           key: key,
-          //lastupdate: Number(moment(r["Last_Update"]).format("x")),
-          //lastseries: Number(lastDay.format("x")),
           name: ((ps && ps.trim() !== cr.trim()) ? `${ps}, ${cr}` : cr),
           provincestate: ps,
           countryregion: cr,
@@ -80,9 +73,22 @@ class Covid19 {
         return new Promise((resolve, reject)=>{
           for (var r of obj) {
             var rkey = this.extractRegionKey_slash(r)
+            //console.log(rkey);
             if (!regions.hasOwnProperty(rkey)) {
-              console.log("can't find property", rkey);
-              continue;
+              /* for whatever reason, Canada has regional reports for confirmed and deaths, but only countrywide reports for recoveries */
+              console.log("can't find property", type, rkey);
+              console.log("adding...");
+              var ps = r["Province/State"].trim()
+              var cr = r["Country/Region"].trim()
+              regions[rkey] = {
+                key: rkey,
+                name: ((ps && ps.trim() !== cr.trim()) ? `${ps}, ${cr}` : cr),
+                provincestate: ps,
+                countryregion: cr,
+                latitude: Number(r.Lat),
+                longitude: Number(r.Long),
+                series: {},
+              };
             }
             var headers = Object.keys(r)
 
@@ -93,7 +99,7 @@ class Covid19 {
               /* init with new series if it doesn't exist */
               if (regions[rkey].series[dkey] == undefined)
               {
-                regions[rkey].series[dkey] = {};
+                regions[rkey].series[dkey] = {confirmed:0, deaths:0, recovered:0};
               }
               regions[rkey].series[dkey][type] = Number(r[dkey]);
             }
@@ -110,14 +116,48 @@ class Covid19 {
         var djo = await C2J().fromString(deaths.contents.toString())
         this.log("Resolving:", files[1].path)
         await parse(djo, "deaths")
+
+        var rjo = await C2J().fromString(recovered.contents.toString())
+        this.log("Resolving:", files[2].path)
+        await parse(rjo, "recovered")
       }
 
       await step()
+i
+      this.log("Calculating Wordlwide total.")
+
+      /* add a worldwide summary */
+      var worldwide = {
+        key: "Worldwide:",
+        name: "Worldwide",
+        provincestate: "",
+        countryregion: "",
+        latitude: 0,
+        longitude: 0,
+        series: {},
+      };
+
+      var keys = Object.keys(regions);
+      for (var i=0; i<keys.length; i++) {
+        key = keys[i];
+        var dates = Object.keys(regions[key].series);
+        for (var d=0; d<dates.length; d++) {
+          if (worldwide.series[dates[d]] == undefined) {
+            worldwide.series[dates[d]] = regions[key].series[dates[d]];
+          }
+          else {
+            worldwide.series[dates[d]].confirmed += regions[key].series[dates[d]].confirmed;
+            worldwide.series[dates[d]].deaths += regions[key].series[dates[d]].deaths;
+            worldwide.series[dates[d]].recovered += regions[key].series[dates[d]].recovered;
+          }
+        }
+      }
 
       this.log("Scan Completed.")
       finish({
         data: regions,
         reportTime: lastDay.format('x'),
+        worldwide: worldwide,
       })
     })
   }
