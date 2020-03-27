@@ -192,6 +192,7 @@ Module.register("MMM-COVID19", {
   },
 
   /* given a country, return a summary of all results involving that country */
+  /* provided empty string, will get summary for all countries */
   getSummarizedStats: function(country) {
     var globalStats = this.globalStats;
     var result = {confirmed:0, deaths:0};
@@ -360,10 +361,8 @@ Module.register("MMM-COVID19", {
     for (var i=0; i<countriesList.length; i++) {
       if (globalStats.data != undefined) {
         let countryName = countriesList[i];
-        let value = this.getValueRow(countryName);    /* the row that the user wants */
         let stats = this.getSummarizedStats(countryName);   /* calculated statistics */
         console.log(stats);
-        console.log(value);
 
         let countryRow = document.createElement("tr"),
             countryNameCell = document.createElement("td"),
