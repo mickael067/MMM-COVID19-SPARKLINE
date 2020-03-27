@@ -116,7 +116,7 @@ class Covid19 {
 
       this.log("Scan Completed.")
       finish({
-        data: Object.values(regions),
+        data: regions,
         reportTime: lastDay.format('x'),
       })
     })

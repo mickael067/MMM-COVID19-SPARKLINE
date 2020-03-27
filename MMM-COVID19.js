@@ -75,10 +75,9 @@ Module.register("MMM-COVID19", {
   },
 
   /* render chart into DOM element */
-  /* rawdata = raw data from https://rapidapi.com/ API */
   /* rawdata has two properties:
-   * 1. country
-   * 2. stat_by_country
+   * 1. name:  this is the name of the country
+   * 2. series:  summary of confirmed/deaths for each day
    */
   getChart: function(rawdata) {
     var chart = document.createElement("div");
@@ -90,13 +89,13 @@ Module.register("MMM-COVID19", {
       return(chart.cloneNode(true));
     }
 
-    //chart.style.cssText = "float: right;";
+    dates = Object.keys(rawdata.series);
+
     /* create a new series object given the raw data */
-    /* we have to separate the junk in the raw data */
-    for (var i=0; i<rawdata.stat_by_country.length; i++)
+    for (var i=0; i<dates.length; i++)
     {
-      t = Date.parse(rawdata.stat_by_country[i].record_date);
-      plotseries[0].data.push([t.valueOf(), this.getNumberFromString( rawdata.stat_by_country[i].total_cases ) ]);
+      var d = Date.parse(dates[i]);
+      plotseries[0].data.push([d.valueOf(), rawdata.series[dates[i]].confirmed]);
     }
 
     /* render directly to chart div */
@@ -176,19 +175,92 @@ Module.register("MMM-COVID19", {
     return chart.cloneNode(true);
   },
 
-  getSummarizedStats: function() {
+  /* given a list of dates, figure out the largest one */
+  getLastDateInSeries: function(dates) {
+    maxdate = Date.parse("1/1/1970");  //a starting max value that I know will be exceeded
+    for (var i=0; i<dates.length; i++)
+    {
+      thisdate = Date.parse(dates[i]);
+      thisdatestring = dates[i];
 
+      if (thisdate > maxdate) {
+        maxdate = thisdate;
+        maxdatestring = thisdatestring;
+      }
+    }
+    return maxdatestring;
+  },
 
+  /* given a country, return a summary of all results involving that country */
+  getSummarizedStats: function(country) {
+    var globalStats = this.globalStats;
+    var result = {confirmed:0, deaths:0};
+
+    if (globalStats.data == undefined) {
+      return;
+    }
+    else {
+      var keys = Object.keys(globalStats.data);
+    }
+
+    country += ":";  /* append colon because that's how Johns Hopkins U did it */
+
+    for (var i=0; i<keys.length; i++)
+    {
+      if (keys[i].includes(country)) {
+        //figure out the most recent date in the list
+        maxdatestring = this.getLastDateInSeries(Object.keys(globalStats.data[keys[i]].series));
+        result.confirmed += globalStats.data[keys[i]].series[maxdatestring].confirmed;
+        result.deaths += globalStats.data[keys[i]].series[maxdatestring].deaths;
+      }
+    }
+
+    return (result);
+  },
+
+  /* get a value row from the reusults data.  This is a helper, it will insert colon if necessary */
+  getValueRow: function(country) {
+    var globalStats = this.globalStats;
+
+    country += ":";  /* append colon because that's how Johns Hopkins U did it */
+    row = globalStats.data[country];
+    return row;
+  },
+
+  /* will get a summary of ALL data for the given country -- this is done by adding up the results for each day in the table */
+  getSummaryRow: function(country) {
+    var globalStats = this.globalStats;
+    var keys = Object.keys(globalStats.data);
+    var summaryrow = {};
+
+    summaryrow.name = country;
+    summaryrow.series = {};
+
+    for (var i=0; i<keys.length; i++)
+    {
+      if (keys[i].includes(country)) {
+        console.log("getSummaryRow:", keys[i]);
+        dates = Object.keys(globalStats.data[keys[i]].series);
+        for (d=0; d<dates.length; d++)
+        {
+          thisdaysdata = globalStats.data[keys[i]].series[dates[d]];
+          if (summaryrow.series[dates[d]] == undefined) {
+            summaryrow.series[dates[d]] = {confirmed:thisdaysdata.confirmed, deaths:thisdaysdata.deaths};
+          }
+          else {
+            summaryrow.series[dates[d]].confirmed += thisdaysdata.confirmed;
+            summaryrow.series[dates[d]].deaths += thisdaysdata.deaths;
+          }
+        }
+      }
+    }
+    return summaryrow;
   },
 
   getDom: function() {
     var countriesList = this.config.countries;  // countries the user wants
     var globalStats = this.globalStats;         // the global stats for all countries
 
-    if (this.config.orderCountriesByName && countriesStats) {
-      countriesStats.sort(this.compareValues('country_name'))
-    }
-    
     var wrapper = document.createElement("table")
     wrapper.className = this.config.tableClass || 'covid'
 
@@ -236,6 +308,7 @@ Module.register("MMM-COVID19", {
 
     // WorldWide row, activate it via config
     if (this.config.worldStats) {
+
       let worldRow = document.createElement("tr"),
           worldNameCell = document.createElement("td"),
           confirmedCell = document.createElement("td"),
@@ -284,9 +357,14 @@ Module.register("MMM-COVID19", {
     }
 
     // countries row, one per country listed at config => countries
-    for (let key in countriesStats) {
-      let value = countriesStats[key]
-      if (countriesList.indexOf(value["country_name"]) != -1) {
+    for (var i=0; i<countriesList.length; i++) {
+      if (globalStats.data != undefined) {
+        let countryName = countriesList[i];
+        let value = this.getValueRow(countryName);    /* the row that the user wants */
+        let stats = this.getSummarizedStats(countryName);   /* calculated statistics */
+        console.log(stats);
+        console.log(value);
+
         let countryRow = document.createElement("tr"),
             countryNameCell = document.createElement("td"),
             confirmedCell = document.createElement("td"),
@@ -294,23 +372,23 @@ Module.register("MMM-COVID19", {
             recoveredCell = document.createElement("td"),
             activeCell = document.createElement("td"),
             graphCell = document.createElement("td"),
-            countryName = value["country_name"],
-            cases = value["cases"],
-            deaths = value["deaths"],
-            totalRecovered = value["total_recovered"],
-            activeCases = value["active_cases"];
 
-        countryNameCell.innerHTML = countryName
-        countryNameCell.className = this.config.infoRowClass
-        confirmedCell.className = 'number confirmed ' + this.config.infoRowClass
-        confirmedCell.innerHTML = cases
-        deathsCell.className = 'number deaths ' + this.config.infoRowClass
-        deathsCell.innerHTML = deaths
-        recoveredCell.className = 'number recovered ' + this.config.infoRowClass
-        recoveredCell.innerHTML = totalRecovered
-        activeCell.className = 'number active ' + this.config.infoRowClass
-        activeCell.innerHTML = activeCases
-        graphCell.className = 'sparkline'
+            cases = stats.confirmed;
+            deaths = stats.deaths;
+            recovered = 0;
+            active = cases-deaths-recovered;;
+
+        countryNameCell.innerHTML = countryName;
+        countryNameCell.className = this.config.infoRowClass;
+        confirmedCell.className = 'number confirmed ' + this.config.infoRowClass;
+        confirmedCell.innerHTML = cases;
+        deathsCell.className = 'number deaths ' + this.config.infoRowClass;
+        deathsCell.innerHTML = deaths;
+        recoveredCell.className = 'number recovered ' + this.config.infoRowClass;
+        recoveredCell.innerHTML = recovered;
+        activeCell.className = 'number active ' + this.config.infoRowClass;
+        activeCell.innerHTML = active;
+        graphCell.className = 'sparkline';
 
         countryRow.appendChild(countryNameCell)
 
@@ -329,16 +407,9 @@ Module.register("MMM-COVID19", {
         if (this.config.graphHistory == true) {
           /* find the history data with the correct name */
           /* and plot the contents */
-          for (i=0; i<countryHistoryStats.length; i++)
-          {
-            if (countryHistoryStats[i].country == countryName)
-            {
-              graphCell.appendChild(this.getChart(countryHistoryStats[i]));
-              console.log(countryName);
-              console.log(countryHistoryStats[i]);
-              break;
-            }
-          }
+          var summaryrow = this.getSummaryRow(countryName);
+          console.log(summaryrow);
+          graphCell.appendChild(this.getChart(summaryrow));
           countryRow.appendChild(graphCell);
         }        
 
@@ -349,7 +420,7 @@ Module.register("MMM-COVID19", {
       let statsDateRow = document.createElement("tr"),
           statsDateCell = document.createElement("td");
 
-      statsDateCell.innerHTML = 'statistic taken at ' + this.countriesStats['statistic_taken_at'] + ' (UTC)'
+      //statsDateCell.innerHTML = 'statistic taken at ' + this.countriesStats['statistic_taken_at'] + ' (UTC)'
       statsDateCell.colSpan = "5";
       statsDateCell.className = 'last-update'
 
@@ -357,7 +428,7 @@ Module.register("MMM-COVID19", {
       wrapper.appendChild(statsDateRow)
     }
 
-		return wrapper
+		return wrapper;
   },
   
   // sort according to some key and the order could be 'asc' or 'desc'
