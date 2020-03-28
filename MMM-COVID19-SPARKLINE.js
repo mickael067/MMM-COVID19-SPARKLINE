@@ -21,7 +21,10 @@ Module.register("MMM-COVID19-SPARKLINE", {
     headerRowClass: "small", // small, medium or big
     infoRowClass: "big", // small, medium or big
     updateInterval: 300000, // update interval in milliseconds
-    fadeSpeed: 4000
+    fadeSpeed: 4000,
+    sparklineWidth: 120,
+    sparklineHeight: 30,
+    sparklineDays: 0,  // configure as zero to get ALL days
   },
 
   getStyles: function() {
@@ -80,7 +83,8 @@ Module.register("MMM-COVID19-SPARKLINE", {
    */
   getChart: function(rawdata) {
     var chart = document.createElement("div");
-    var plotseries = [{name: '', data:[]}, {name: '', data:[]}, {name: '', data:[]}];  /* empty series to get started */
+    var startidx = 0;
+    var plotseries = [{name: '', data:[]}, {name: '', data:[]}, {name: '', data:[]}, {name: '', data:[]}];  /* empty series to get started */
     chart.id = "covid19-sparkline-chart";
 
     if (rawdata == undefined)
@@ -90,14 +94,28 @@ Module.register("MMM-COVID19-SPARKLINE", {
 
     dates = Object.keys(rawdata.series);
 
+    if (this.config.sparklineDays != 0) {
+      startidx = dates.length-this.config.sparklineDays;
+    }
+
 
     /* create a new series object given the raw data */
-    for (var i=0; i<dates.length; i++)
+    /* notice, these are stacked in a way that makes the colors more visible */
+    for (var i=startidx; i<dates.length; i++)
     {
       var d = Date.parse(dates[i]);
-      plotseries[0].data.push([d.valueOf(), rawdata.series[dates[i]].confirmed]);
-      plotseries[1].data.push([d.valueOf(), rawdata.series[dates[i]].recovered]);
-      plotseries[2].data.push([d.valueOf(), rawdata.series[dates[i]].deaths]);
+      if (this.config.columns.includes("confirmed")) {
+        plotseries[0].data.push([d.valueOf(), rawdata.series[dates[i]].confirmed]);
+      }
+      if (this.config.columns.includes("recovered")) {
+        plotseries[1].data.push([d.valueOf(), rawdata.series[dates[i]].recovered]);
+      }
+      if (this.config.columns.includes("active")) {
+        plotseries[2].data.push([d.valueOf(), rawdata.series[dates[i]].confirmed-rawdata.series[dates[i]].recovered-rawdata.series[dates[i]].deaths]);
+      }
+      if (this.config.columns.includes("deaths")) {
+        plotseries[3].data.push([d.valueOf(), rawdata.series[dates[i]].deaths]);
+      }
     }
 
     /* render directly to chart div */
@@ -108,8 +126,8 @@ Module.register("MMM-COVID19-SPARKLINE", {
       chart: {
         type: 'area',
         margin: [2, 0, 2, 0],
-        width: 120,
-        height: 30,
+        width: this.config.sparklineWidth,
+        height: this.config.sparklineHeight,
         style: {
           overflow: 'visible'
         },
@@ -143,7 +161,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
         visible: false,
       },
       yAxis: {
-          visible: false,
+        visible: false,
       },
       series: plotseries,
       credits: {
@@ -155,7 +173,8 @@ Module.register("MMM-COVID19-SPARKLINE", {
       legend: {
         enabled: false
       },
-      colors: ["#DEECFA", "#0F0", "#F00"]
+      /*        gray       green      yellow     red  */
+      colors: ["#83A8CB", "#008000", "#EFA500", "#FF0000"]
     });
 
     return chart.cloneNode(true);
@@ -280,7 +299,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
     if (this.config.columns.includes("active")) {
       headerRow.appendChild(headeractiveCell)
     }
-    if (this.config.graphHistory == true) {
+    if (this.config.sparklines == true) {
       headerRow.appendChild(headergraphCell);
     }
 
@@ -302,7 +321,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
           cases = globalStats.worldwide.series[lastdate].confirmed,
           deaths = globalStats.worldwide.series[lastdate].deaths,
           recovered = globalStats.worldwide.series[lastdate].recovered,
-          activeCases = cases - deaths - recovered;
+          active = cases - deaths - recovered;
 
       //console.log(globalStats);
 
@@ -320,7 +339,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
       recoveredCell.innerHTML = recovered
 
       activeCell.className = 'number active ' + this.config.infoRowClass
-      activeCell.innerHTML = activeCases
+      activeCell.innerHTML = active
 
       graphCell.className = ''
       graphCell.innerHTML = ''
@@ -339,7 +358,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
       if (this.config.columns.includes("active")) {
         worldRow.appendChild(activeCell);
       }
-      if (this.config.graphHistory == true) {
+      if (this.config.sparklines == true) {
         graphCell.appendChild(this.getChart(globalStats.worldwide));
         worldRow.appendChild(graphCell);
       }
@@ -393,7 +412,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
         if (this.config.columns.includes("active")) {
           countryRow.appendChild(activeCell)
         }
-        if (this.config.graphHistory == true) {
+        if (this.config.sparklines == true) {
           /* find the history data with the correct name */
           /* and plot the contents */
           var summaryrow = this.getSummaryRow(countryName);
