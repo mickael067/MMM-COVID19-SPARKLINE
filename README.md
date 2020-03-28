@@ -12,7 +12,7 @@ This work is a combination of two other plugins:
 
 At the end of the day, I decided to merge the two appraoches to get what I wanted.
 
-![Example](.github/example-screenshot.png)
+![Example](images/screenshot.png)
 
 ## Installation
 
