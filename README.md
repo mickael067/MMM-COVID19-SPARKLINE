@@ -93,3 +93,5 @@ git pull
 Feel free to open any Issue :smiley:
 
 ## Thanks
+
+Thanks to Jose Forte and Seongnoh Sean Yi for their plugins, I borrowed heavily from your work to create this.
