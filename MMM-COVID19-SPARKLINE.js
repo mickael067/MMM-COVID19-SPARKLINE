@@ -7,18 +7,17 @@
  * MIT Licensed.
  */
 
-Module.register("MMM-COVID19", {
+Module.register("MMM-COVID19-SPARKLINE", {
   countriesStats: {},
   countryHistoryStats: [],
   globalStats: { "total_cases": "", "total_deaths": "", "total_recovered": "" }, // beautify things at start
   defaults: {
-    header: 'COVID-19',    
+    header: 'COVID-19-SPARKLINE',    
     countries: [ "Argentina", "Italy", "Spain", "Germany" ], // default list
     columns: ["confirmed", "deaths", "recovered", "active"], // default columns to display 
     orderCountriesByName: false,
     lastUpdateInfo: false,
     worldStats: false,
-    rapidapiKey : "", // X-RapidAPI-Key provided at https://rapidapi.com/astsiatsko/api/coronavirus-monitor
     headerRowClass: "small", // small, medium or big
     infoRowClass: "big", // small, medium or big
     updateInterval: 300000, // update interval in milliseconds
@@ -26,7 +25,7 @@ Module.register("MMM-COVID19", {
   },
 
   getStyles: function() {
-    return ["MMM-COVID19.css"]
+    return ["MMM-COVID19-SPARKLINE.css"]
   },
 
   getScripts: function() {

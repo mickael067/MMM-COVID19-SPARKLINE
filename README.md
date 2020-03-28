@@ -1,7 +1,16 @@
-# MMM-COVID19
-A [MagicMirror²](https://magicmirror.builders) helper module to track reported cases of COVID-19.
+# MMM-COVID19-SPARKLINE
+A [MagicMirror²](https://magicmirror.builders) helper module to track reported cases of COVID-19 with sparkline plots.
 
-[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://raw.githubusercontent.com/bibaldo/MMM-COVID19/master/LICENSE)
+[![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://raw.githubusercontent.com/skelliam/MMM-COVID19-SPARKLINE/master/LICENSE)
+
+This work is a combination of two other plugins:
+
+* [MMM-COVID19](https://github.com/bibaldo/MMM-COVID19) by Jose Forte
+  * This plugin has a clean design, but I didn't care for the rapidapi.com service that it used as a data source.  If you look at my commit history, you'll find a version of Jose's plugin where I've added plot capability.
+* [MMM-COVID-19](https://github.com/eouia/MMM-COVID-19) by Seongnoh Sean Yi
+  * This plugin uses GitHub as a backend, the same data source that is used by the famous [Johns Hopkins Map](https://coronavirus.jhu.edu/map.html).  I prefer the use of this data source.
+
+At the end of the day, I decided to merge the two appraoches to get what I wanted.
 
 ![Example](.github/example-screenshot.png)
 
