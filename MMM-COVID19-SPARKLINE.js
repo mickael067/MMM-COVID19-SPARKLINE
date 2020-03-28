@@ -25,6 +25,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
     sparklineWidth: 120,
     sparklineHeight: 30,
     sparklineDays: 0,  // configure as zero to get ALL days
+    sortby: "confirmed",  // the column to sort the output by
   },
 
   getStyles: function() {
