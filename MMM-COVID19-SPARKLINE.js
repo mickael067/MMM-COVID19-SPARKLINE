@@ -13,15 +13,16 @@ Module.register("MMM-COVID19-SPARKLINE", {
   globalStats: { "total_cases": "", "total_deaths": "", "total_recovered": "" }, // beautify things at start
   defaults: {
     header: 'COVID-19-SPARKLINE',    
-    countries: [ "Argentina", "Italy", "Spain", "Germany" ], // default list
-    columns: ["confirmed", "deaths", "recovered", "active"], // default columns to display 
+    countries: [ "US", "Italy", "Germany", "Canada", "Mexico" ], // default list
+    columns: ["confirmed", "deaths", "recovered"], // default columns to display 
     orderCountriesByName: false,
-    lastUpdateInfo: false,
-    worldStats: false,
+    lastUpdateddInfo: false,
+    worldStats: true,
     headerRowClass: "small", // small, medium or big
-    infoRowClass: "big", // small, medium or big
-    updateInterval: 300000, // update interval in milliseconds
-    fadeSpeed: 4000,
+    infoRowClass: "medium", // small, medium or big
+    updateInterval: 10800000, // update interval in milliseconds, default value 3 hours
+    fadeSpeed: 1000,
+    sparklines: true,
     sparklineWidth: 120,
     sparklineHeight: 30,
     sparklineDays: 0,  // configure as zero to get ALL days

@@ -23,13 +23,18 @@ cd ~/MagicMirror/modules
 
 Clone this repository:
 ````
-git clone https://github.com/bibaldo/MMM-COVID19.git
+git clone https://github.com/skelliam/MMM-COVID19-SPARKLINE.git
+````
+
+Fetch dependencies:
+````
+npm install
 ````
 
 Add the module to the modules array in the `config/config.js` file:
 ````javascript
   {
-    module: 'MMM-COVID19'
+    module: 'MMM-COVID19-SPARKLINE'
   },
 ````
 
@@ -40,41 +45,52 @@ The following properties can be configured:
 
 | Option                       | Description
 | ---------------------------- | -----------
-| `header`                     | The header text <br><br> **Default value:** `'COVID-19'`
-| `worldStats`                 | Worldwide stats <br><br> **OPTIONAL** <br> **Possible values:** `false` or `true` <br> **Default value:** `false`
-| `countries`                  | The countries that we want to get live COVID-19 stats <br><br> **Possible values:** `[  "Argentina, "USA" ]` <br> **Default value:** `[ "Argentina", "Italy", "Spain", "Germany" ]`
+| `header`                     | The header text <br><br> **Default value:** `'COVID-19-SPARKLINE'`
+| `worldStats`                 | Worldwide stats <br><br> **OPTIONAL** <br> **Possible values:** `false` or `true` <br> **Default value:** `true`
+| `countries`                  | The countries that we want to get COVID-19 stats <br><br> **Possible values:** `[  "Argentina, "US" ]` <br> **Default value:** `[ "US", "Italy", "Germany", "Canada", "Mexico" ]`
 | `orderCountriesByName`       |  Order results by country name (asc) <br><br> **OPTIONAL** <br> **Possible values:** `false` or `true` <br> **Default value:** `false`
 | `lastUpdateInfo`             | Last update info in UTC Time <br><br> **OPTIONAL** <br> **Possible values:** `false` or `true` <br> **Default value:** `false`
-| `rapidapiKey`                | rapidApi.com api key <br><br> **MANDATORY** <br> **Check Notes**
 | `headerRowClass`             | The font size of the row headers <br><br> **Possible values:** `'small'`, `'medium'`, `'big'` <br> **Default value:** `'small'`
-| `infoRowClass`               | The font size of data <br><br> **Possible values:** `'small'`, `'medium'`, `'big'` <br> **Default value:** `'big'`
-| `updateInterval`             | How often does the content needs to be fetched? (Milliseconds) <br><br> **Possible values:** `1000` - `86400000` <br> **Default value:** `300000` (5 minutes)
-| `columns`                    | The columns you wish to be displayed.  **Possible values:** `[ "confirmed", "deaths", "recovered", "active" ]` <br> **Default value:** `[ "confirmed", "deaths", "recovered", "active" ]`
-
+| `infoRowClass`               | The font size of data <br><br> **Possible values:** `'small'`, `'medium'`, `'big'` <br> **Default value:** `'medium'`
+| `updateInterval`             | How often does the content needs to be fetched? (Milliseconds) <br><br> **Possible values:** `1000` - `86400000` <br> **Default value:** `10800000` (3 hours) <br> Note that this data is updated once daily, so setting this to a small value will not force updates faster, it will only put a burden on github.
+| `columns`                    | The columns you wish to be displayed.  **Possible values:** `[ "confirmed", "deaths", "recovered", "active" ]` <br> **Default value:** `[ "confirmed", "deaths", "recovered" ]`
+| `fadeSpeed`                  | Fade speed in ms <br> **Default value:** `1000`
+| `sparklines`                 | Show sparkline plots or not <br> **Default value:** `true`
+| `sparklineWidth`             | width of sparkline in px <br> **Default value:** `120`
+| `sparklineHeight`            | height of sparkline in px <br> **Default value:** `30`
+| `sparklineDays`              | Number of days to show in plot, specify 0 for all available days <br> **Default value:** `0`
 
 ## Config Example
 
 ````javascript
-  {
-    module: 'MMM-COVID19',
-    config: {
-      updateInterval: 300000,
-      worldStats: true,
-      countries: [ "Argentina", "China", "Italy", "Spain" ],
-      headerRowClass: "small",
-      rapidapiKey : "01d6665ba777fdb4117cdmshc742d5373fae8f1cp148639jsn1" // this is an example, do not try to use it for real
-    }
-  },
+		{
+			module: 'MMM-COVID19-SPARKLINE',
+			position: "bottom_left",
+			config : {
+				worldStats: true,
+				sparklines: true,
+				sparklineWidth: 100,
+				sparklineHeight: 35,
+				sparklineDays: 30,
+				sortby: "confirmed",
+				columns: ["confirmed", "deaths", "recovered"],
+				countries: ["US", "Italy", "Germany", "China", "Canada", "Mexico"],
+				updateInterval: 1000 * 60 * 60 * 3,  //3 hours
+				infoRowClass: "medium",
+				headerRowClass: "small",
+				fadeSpeed: 1000,
+			}
+    },
+    
 ````
-**Notes** 
-* `rapidapiKey` is **required**. You should first create an account on https://rapidapi.com/ and then go to https://rapidapi.com/astsiatsko/api/coronavirus-monitor, and use `cases_by_country` and `worldstat` endpoints
-
 ## Updating
 
-To update the module to the latest version, use your terminal to go to your MMM-COVID19 module folder and type the following command:
+To update the module to the latest version, use your terminal to go to your MMM-COVID19-SPARKLINE module folder and type the following command:
 
 ````
 git pull
 ```` 
 
 Feel free to open any Issue :smiley:
+
+## Thanks
