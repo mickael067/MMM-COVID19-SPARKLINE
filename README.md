@@ -90,8 +90,10 @@ To update the module to the latest version, use your terminal to go to your MMM-
 git pull
 ```` 
 
-Feel free to open any Issue :smiley:
+## Development
+
+Probably I will not actively maintain this plugin unless it breaks.  If you want to modify it, that's great, please make a pull request.
 
 ## Thanks
 
-Thanks to Jose Forte and Seongnoh Sean Yi for their plugins, I borrowed heavily from your work to create this.
+Thanks to Jose Forte and Seongnoh Sean Yi for your plugins, I borrowed heavily from your work to create this derivative work.
