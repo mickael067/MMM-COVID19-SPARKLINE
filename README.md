@@ -63,25 +63,24 @@ The following properties can be configured:
 ## Config Example
 
 ````javascript
-		{
-			module: 'MMM-COVID19-SPARKLINE',
-			position: "bottom_left",
-			config : {
-				worldStats: true,
-				sparklines: true,
-				sparklineWidth: 100,
-				sparklineHeight: 35,
-				sparklineDays: 30,
-				sortby: "confirmed",
-				columns: ["confirmed", "deaths", "recovered"],
-				countries: ["US", "Italy", "Germany", "China", "Canada", "Mexico"],
-				updateInterval: 1000 * 60 * 60 * 3,  //3 hours
-				infoRowClass: "medium",
-				headerRowClass: "small",
-				fadeSpeed: 1000,
-			}
+    {
+    module: 'MMM-COVID19-SPARKLINE',
+      position: "bottom_left",
+      config : {
+        worldStats: true,
+        sparklines: true,
+        sparklineWidth: 100,
+        sparklineHeight: 35,
+        sparklineDays: 30,
+        sortby: "confirmed",
+        columns: ["confirmed", "deaths", "recovered"],
+        countries: ["US", "Italy", "Germany", "China", "Canada", "Mexico"],
+        updateInterval: 1000 * 60 * 60 * 3,  //3 hours
+        infoRowClass: "medium",
+        headerRowClass: "small",
+        fadeSpeed: 1000,
+      }
     },
-    
 ````
 ## Updating
 
