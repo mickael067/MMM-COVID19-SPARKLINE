@@ -65,7 +65,6 @@ Module.register("MMM-COVID19-SPARKLINE", {
     var self = this
 
     if (notification === "GLOBAL_RESULT") {
-      //console.log(payload);
       this.globalStats = payload;
       this.updateDom(self.config.fadeSpeed);
     }
@@ -228,7 +227,6 @@ Module.register("MMM-COVID19-SPARKLINE", {
   /* get percentage in parenthesis */
   getPercentageChg: function(value) {
     var output = "";
-    console.log(value);
     value -= 1.0;
     output = Math.round(value * 100);
     //output = this.decorateNumber(output);
@@ -290,7 +288,6 @@ Module.register("MMM-COVID19-SPARKLINE", {
     for (var i=0; i<keys.length; i++)
     {
       if (keys[i].includes(country)) {
-        //console.log("getSummaryRow:", keys[i]);
         dates = Object.keys(globalStats.data[keys[i]].series);
         for (d=0; d<dates.length; d++)
         {
@@ -319,9 +316,6 @@ Module.register("MMM-COVID19-SPARKLINE", {
 
     var wrapper = document.createElement("table")
     wrapper.className = this.config.tableClass || 'covid';
-
-    console.log(globalStats);
-
 
     // header row
     var headerRow = document.createElement("tr"),
@@ -387,7 +381,13 @@ Module.register("MMM-COVID19-SPARKLINE", {
 
       worldNameCell.innerHTML = 'Worldwide'
       worldNameCell.className = this.config.infoRowClass
-      worldRow.className = 'world ' + this.config.infoRowClass
+      worldRow.className = this.config.infoRowClass 
+
+      /* when not showing delta row, the worldRow will have the double line beneath it */
+      if (this.config.showDelta == false) {
+        worldRow.className += " world "
+      }
+
       d_worldNameCell.innerHTML = ''
       d_worldRow.className = 'world ' + this.config.infoRowClass
 
@@ -447,7 +447,6 @@ Module.register("MMM-COVID19-SPARKLINE", {
       if (globalStats.data != undefined) {
         let countryName = countriesList[i];
         let stats = this.getSummarizedStats(countryName);   /* calculated statistics */
-        ////console.log(stats);
 
         let countryRow = document.createElement("tr"),
             countryNameCell = document.createElement("td"),
@@ -515,7 +514,6 @@ Module.register("MMM-COVID19-SPARKLINE", {
           /* find the history data with the correct name */
           /* and plot the contents */
           var summaryrow = this.getSummaryRow(countryName);
-          console.log(summaryrow);
           graphCell.appendChild(this.getChart(summaryrow));
           countryRow.appendChild(graphCell);
 
