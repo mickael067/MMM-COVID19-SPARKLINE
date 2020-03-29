@@ -26,8 +26,9 @@ Clone this repository:
 git clone https://github.com/skelliam/MMM-COVID19-SPARKLINE.git
 ````
 
-Fetch dependencies:
+Change to plugin directory and fetch dependencies:
 ````
+cd MMM-COVID19-SPARKLINE
 npm install
 ````
 
