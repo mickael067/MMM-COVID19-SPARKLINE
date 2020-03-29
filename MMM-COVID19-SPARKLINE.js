@@ -141,7 +141,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
       plotOptions: {
         series: {
           animation: false,
-          lineWidth: 0.55,
+          lineWidth: 0.85,
           shadow: false,
           states: {
               hover: {
@@ -177,7 +177,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
         enabled: false
       },
       /*        gray       green      yellow     red  */
-      colors: ["#abcae8", "#008000", "#EFA500", "#FF0000"]
+      colors: ["#5d93c6", "#00d100", "#EFA500", "#FF0000"]
     });
 
     return chart.cloneNode(true);
