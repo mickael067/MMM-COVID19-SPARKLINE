@@ -54,13 +54,13 @@ The following properties can be configured:
 | `headerRowClass`             | The font size of the row headers <br><br> **Possible values:** `'small'`, `'medium'`, `'big'` <br> **Default value:** `'small'`
 | `infoRowClass`               | The font size of data <br><br> **Possible values:** `'small'`, `'medium'`, `'big'` <br> **Default value:** `'medium'`
 | `updateInterval`             | How often does the content needs to be fetched? (Milliseconds) <br><br> **Possible values:** `1000` - `86400000` <br> **Default value:** `10800000` (3 hours) <br> Note that this data is updated once daily, so setting this to a small value will not force updates faster, it will only put a burden on github.
-| `columns`                    | The columns you wish to be displayed.  **Possible values:** `[ "confirmed", "deaths", "recovered", "active" ]` <br> **Default value:** `[ "confirmed", "deaths", "recovered" ]`
+| `columns`                    | The columns you wish to be displayed.  **Possible values:** `[ "confirmed", "deaths", "recovered"]` <br> **Default value:** `[ "confirmed", "deaths", "recovered" ]`
 | `fadeSpeed`                  | Fade speed in ms <br> **Default value:** `1000`
 | `sparklines`                 | Show sparkline plots or not <br> **Default value:** `true`
 | `sparklineWidth`             | width of sparkline in px <br> **Default value:** `120`
 | `sparklineHeight`            | height of sparkline in px <br> **Default value:** `30`
 | `sparklineDays`              | Number of days to show in plot, specify 0 for all available days <br> **Default value:** `0`
-| `showDelta`                  | Whether or not to show the change from the last measurement <br> **Default value:** `true`
+| `showDelta`                  | Whether or not to show the change from the last measurement <br> **Default value:** `false`
 
 ## Config Example
 
@@ -81,6 +81,7 @@ The following properties can be configured:
         infoRowClass: "medium",
         headerRowClass: "small",
         fadeSpeed: 1000,
+        showDelta: true,
       }
     },
 ````
