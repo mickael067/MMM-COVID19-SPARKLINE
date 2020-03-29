@@ -2,6 +2,8 @@ const GithubContent = require('github-content')
 const C2J = require('csvtojson')
 const moment = require('moment')
 
+const STARTCOL = 4;
+
 class Covid19 {
   constructor(options=null) {
     this.regions = {}
@@ -92,16 +94,24 @@ class Covid19 {
             }
             var headers = Object.keys(r)
 
-            /* get all days available; first day is column 4 */
-            for (var i=4; i<headers.length; i++)
+            /* get all days available; first column of dates is STARTCOL */
+            for (var i=STARTCOL; i<headers.length; i++)
             {
               var dkey = headers[i];
+              var dkey_last = headers[i];
+
+              if (i > STARTCOL) {
+                dkey_last = headers[i-1];
+              }
+              
               /* init with new series if it doesn't exist */
               if (regions[rkey].series[dkey] == undefined)
               {
-                regions[rkey].series[dkey] = {confirmed:0, deaths:0, recovered:0};
+                regions[rkey].series[dkey] = {confirmed:0, d_confirmed:0, deaths:0, d_deaths:0, recovered:0, d_recovered:0};
               }
+
               regions[rkey].series[dkey][type] = Number(r[dkey]);
+              regions[rkey].series[dkey]["d_"+type] = Number(r[dkey]) - Number(r[dkey_last]);
             }
           }
           resolve()
@@ -123,7 +133,7 @@ class Covid19 {
       }
 
       await step()
-i
+
       this.log("Calculating Wordlwide total.")
 
       /* add a worldwide summary */
@@ -141,6 +151,7 @@ i
       for (var i=0; i<keys.length; i++) {
         key = keys[i];
         var dates = Object.keys(regions[key].series);
+
         for (var d=0; d<dates.length; d++) {
           if (worldwide.series[dates[d]] == undefined) {
             worldwide.series[dates[d]] = regions[key].series[dates[d]];
@@ -151,6 +162,21 @@ i
             worldwide.series[dates[d]].recovered += regions[key].series[dates[d]].recovered;
           }
         }
+      }
+
+      /* worldwide dates */
+      var dates = Object.keys(worldwide.series);
+
+      /* init first delta as zero */
+      worldwide.series[dates[0]].d_confirmed = 0;
+      worldwide.series[dates[0]].d_deaths = 0;
+      worldwide.series[dates[0]].d_recovered = 0;
+      
+      /* compute worldwide deltas */
+      for (var d=1; d<dates.length; d++) {
+        worldwide.series[dates[d]].d_confirmed = worldwide.series[dates[d]].confirmed - worldwide.series[dates[d-1]].confirmed;
+        worldwide.series[dates[d]].d_deaths = worldwide.series[dates[d]].deaths - worldwide.series[dates[d-1]].deaths;
+        worldwide.series[dates[d]].d_recovered = worldwide.series[dates[d]].recovered - worldwide.series[dates[d-1]].recovered;
       }
 
       this.log("Scan Completed.")

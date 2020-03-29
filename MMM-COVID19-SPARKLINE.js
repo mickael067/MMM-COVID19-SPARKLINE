@@ -185,7 +185,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
 
   /* given a list of dates, get the value of the last one */
   getLastDateInSeries: function(dates) {
-    maxdatestring = dates[dates.length-1];
+    var maxdatestring = dates[dates.length-1];
     return maxdatestring;
   },
 
@@ -193,15 +193,37 @@ Module.register("MMM-COVID19-SPARKLINE", {
   /* 0 means last one */
   /* 1 means one from the end, etc. */
   getNthDateFromEnd: function(dates, n) {
-    maxdatestring = dates[dates.length-(n+1)];
+    var maxdatestring = dates[dates.length-(n+1)];
     return maxdatestring;
+  },
+
+  /* append positive sign for delta change */
+  decorateNumber: function(value) {
+    var output = "";
+    if (value >= 0) {
+      output = "+" + String(value);
+    }
+    else {
+      output = String(value);
+    }
+    return output;
+  },
+
+  /* get percentage in parenthesis */
+  getPercentageChg: function(value) {
+    var output = "";
+    console.log(value);
+    value -= 1.0;
+    output = this.decorateNumber(Math.round(value * 100));
+    output = "(" + String(output) + "%)"
+    return output;
   },
 
   /* given a country, return a summary of all results involving that country */
   /* provided empty string, will get summary for all countries */
   getSummarizedStats: function(country) {
     var globalStats = this.globalStats;
-    var result = {confirmed:0, deaths:0, recovered:0};
+    var result = {confirmed:0, deaths:0, recovered:0, d_confirmed:0, d_deaths:0, d_recovered:0};
 
     if (globalStats.data == undefined) {
       return;
@@ -220,6 +242,10 @@ Module.register("MMM-COVID19-SPARKLINE", {
         result.confirmed += globalStats.data[keys[i]].series[maxdatestring].confirmed;
         result.deaths += globalStats.data[keys[i]].series[maxdatestring].deaths;
         result.recovered += globalStats.data[keys[i]].series[maxdatestring].recovered;
+
+        result.d_confirmed += globalStats.data[keys[i]].series[maxdatestring].d_confirmed;
+        result.d_deaths += globalStats.data[keys[i]].series[maxdatestring].d_deaths;
+        result.d_recovered += globalStats.data[keys[i]].series[maxdatestring].d_recovered
       }
     }
 
@@ -253,12 +279,16 @@ Module.register("MMM-COVID19-SPARKLINE", {
         {
           thisdaysdata = globalStats.data[keys[i]].series[dates[d]];
           if (summaryrow.series[dates[d]] == undefined) {
-            summaryrow.series[dates[d]] = {confirmed:thisdaysdata.confirmed, deaths:thisdaysdata.deaths, recovered:thisdaysdata.recovered};
+            summaryrow.series[dates[d]] = {confirmed:thisdaysdata.confirmed, deaths:thisdaysdata.deaths, recovered:thisdaysdata.recovered, d_confirmed:thisdaysdata.d_confirmed, d_deaths:thisdaysdata.d_deaths, d_recovered:thisdaysdata.d_recovered};
           }
           else {
             summaryrow.series[dates[d]].confirmed += thisdaysdata.confirmed;
             summaryrow.series[dates[d]].deaths += thisdaysdata.deaths;
             summaryrow.series[dates[d]].recovered += thisdaysdata.recovered;
+
+            summaryrow.series[dates[d]].d_confirmed += thisdaysdata.d_confirmed;
+            summaryrow.series[dates[d]].d_deaths += thisdaysdata.d_deaths;
+            summaryrow.series[dates[d]].d_recovered += thisdaysdata.d_recovered;
           }
         }
       }
@@ -272,6 +302,8 @@ Module.register("MMM-COVID19-SPARKLINE", {
 
     var wrapper = document.createElement("table")
     wrapper.className = this.config.tableClass || 'covid';
+
+    console.log(globalStats);
 
 
     // header row
@@ -319,10 +351,9 @@ Module.register("MMM-COVID19-SPARKLINE", {
     // WorldWide row, activate it via config
     if ((this.config.worldStats) && (globalStats.worldwide != undefined)){
       lastdate = this.getNthDateFromEnd(Object.keys(globalStats.worldwide.series), 0);
-      daybefore = this.getNthDateFromEnd(Object.keys(globalStats.worldwide.series), 1);
 
       let worldRow = document.createElement("tr"),
-          worldRow_d = document.createElement("tr"),  // _d is for delta
+          d_worldRow = document.createElement("tr"),  // _d is for delta
 
           worldNameCell = document.createElement("td"),
           confirmedCell = document.createElement("td"),
@@ -331,86 +362,86 @@ Module.register("MMM-COVID19-SPARKLINE", {
           activeCell = document.createElement("td"),
           graphCell = document.createElement("td"),
 
-          worldNameCell_d = document.createElement("td"),
-          confirmedCell_d = document.createElement("td"),
-          deathsCell_d = document.createElement("td"),
-          recoveredCell_d = document.createElement("td"),
-          activeCell_d = document.createElement("td"),
-          graphCell_d = document.createElement("td"),
+          d_worldNameCell = document.createElement("td"),
+          d_confirmedCell = document.createElement("td"),
+          d_deathsCell = document.createElement("td"),
+          d_recoveredCell = document.createElement("td"),
+          d_activeCell = document.createElement("td"),
+          d_graphCell = document.createElement("td"),
 
-          cases = globalStats.worldwide.series[lastdate].confirmed,
+          confirmed = globalStats.worldwide.series[lastdate].confirmed,
           deaths = globalStats.worldwide.series[lastdate].deaths,
           recovered = globalStats.worldwide.series[lastdate].recovered,
-          active = cases - deaths - recovered;
+          active = confirmed - deaths - recovered;
 
-          cases_d = cases-globalStats.worldwide.series[daybefore].confirmed,
-          deaths_d = deaths-globalStats.worldwide.series[daybefore].deaths,
-          recovered_d = recovered-globalStats.worldwide.series[daybefore].recovered,
-          active_d = active-(cases_d - deaths_d - recovered_d);
+          d_confirmed = globalStats.worldwide.series[lastdate].d_confirmed,
+          d_deaths = globalStats.worldwide.series[lastdate].d_deaths,
+          d_recovered = globalStats.worldwide.series[lastdate].d_recovered,
+          d_active = active-(d_confirmed - d_deaths - d_recovered);
 
       //console.log(globalStats);
 
       worldNameCell.innerHTML = 'Worldwide'
       worldNameCell.className = this.config.infoRowClass
       worldRow.className = 'world ' + this.config.infoRowClass
-      worldNameCell_d.innerHTML = ''
-      //worldNameCell_d.className = this.config.infoRowClass
-      worldRow_d.className = 'world ' + this.config.infoRowClass
+      d_worldNameCell.innerHTML = ''
+      //d_worldNameCell.className = this.config.infoRowClass
+      d_worldRow.className = 'world ' + this.config.infoRowClass
 
       confirmedCell.className = 'number confirmed ' + this.config.infoRowClass
-      confirmedCell.innerHTML = cases
-      confirmedCell_d.className = 'number confirmed ' + this.config.infoRowClass
-      confirmedCell_d.innerHTML = cases_d
+      confirmedCell.innerHTML = confirmed
+      d_confirmedCell.className = 'number confirmed micro'
+      d_confirmedCell.innerHTML = this.decorateNumber(d_confirmed) + this.getPercentageChg(confirmed/(confirmed-d_confirmed));;
 
       deathsCell.className = 'number deaths ' + this.config.infoRowClass
       deathsCell.innerHTML = deaths
-      deathsCell_d.className = 'number deaths ' + this.config.infoRowClass
-      deathsCell_d.innerHTML = deaths_d
+      d_deathsCell.className = 'number deaths micro'
+      d_deathsCell.innerHTML = this.decorateNumber(d_deaths) + this.getPercentageChg(deaths/(deaths-d_deaths));
 
       recoveredCell.className = 'number recovered ' + this.config.infoRowClass
       recoveredCell.innerHTML = recovered
-      recoveredCell_d.className = 'number recovered ' + this.config.infoRowClass
-      recoveredCell_d.innerHTML = recovered_d
+      d_recoveredCell.className = 'number recovered micro'
+      d_recoveredCell.innerHTML = this.decorateNumber(d_recovered) + this.getPercentageChg(recovered/(recovered-d_recovered));;
 
       activeCell.className = 'number active ' + this.config.infoRowClass
       activeCell.innerHTML = active
-      activeCell_d.className = 'number active ' + this.config.infoRowClass
-      activeCell_d.innerHTML = active_d
+      d_activeCell.className = 'number active micro'
+      d_activeCell.innerHTML = this.decorateNumber(d_active) + this.getPercentageChg(active/(active-d_active));;
 
       graphCell.className = ''
       graphCell.innerHTML = ''
-      graphCell_d.className = ''
-      graphCell_d.innerHTML = ''
+      d_graphCell.className = ''
+      d_graphCell.innerHTML = ''
 
       worldRow.appendChild(worldNameCell)
-      worldRow_d.appendChild(worldNameCell_d);  /* empty */
+      d_worldRow.appendChild(d_worldNameCell);  /* empty */
 
       if (this.config.columns.includes("confirmed")) {
         worldRow.appendChild(confirmedCell);
-        worldRow_d.appendChild(confirmedCell_d);
+        d_worldRow.appendChild(d_confirmedCell);
       }
       if (this.config.columns.includes("deaths")) {
         worldRow.appendChild(deathsCell);
-        worldRow_d.appendChild(deathsCell_d);
+        d_worldRow.appendChild(d_deathsCell);
       }
       if (this.config.columns.includes("recovered")) {
         worldRow.appendChild(recoveredCell);
-        worldRow_d.appendChild(recoveredCell_d);
+        d_worldRow.appendChild(d_recoveredCell);
       }
       if (this.config.columns.includes("active")) {
         worldRow.appendChild(activeCell);
-        worldRow_d.appendChild(activeCell_d);
+        d_worldRow.appendChild(d_activeCell);
       }
       if (this.config.sparklines == true) {
         graphCell.appendChild(this.getChart(globalStats.worldwide));
         worldRow.appendChild(graphCell);
-        worldRow_d.appendChild(graphCell_d);
+        d_worldRow.appendChild(d_graphCell);
       }
 
       wrapper.appendChild(worldRow)
 
       if (this.config.showDelta == true) {
-        wrapper.appendChild(worldRow_d);
+        wrapper.appendChild(d_worldRow);
       }
 
 
@@ -431,15 +462,15 @@ Module.register("MMM-COVID19-SPARKLINE", {
             activeCell = document.createElement("td"),
             graphCell = document.createElement("td"),
 
-            cases = stats.confirmed;
+            confirmed = stats.confirmed;
             deaths = stats.deaths;
             recovered = stats.recovered;
-            active = cases-deaths-recovered;;
+            active = confirmed-deaths-recovered;;
 
         countryNameCell.innerHTML = countryName;
         countryNameCell.className = this.config.infoRowClass;
         confirmedCell.className = 'number confirmed ' + this.config.infoRowClass;
-        confirmedCell.innerHTML = cases;
+        confirmedCell.innerHTML = confirmed;
         deathsCell.className = 'number deaths ' + this.config.infoRowClass;
         deathsCell.innerHTML = deaths;
         recoveredCell.className = 'number recovered ' + this.config.infoRowClass;
