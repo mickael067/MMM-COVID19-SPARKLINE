@@ -60,6 +60,7 @@ The following properties can be configured:
 | `sparklineWidth`             | width of sparkline in px <br> **Default value:** `120`
 | `sparklineHeight`            | height of sparkline in px <br> **Default value:** `30`
 | `sparklineDays`              | Number of days to show in plot, specify 0 for all available days <br> **Default value:** `0`
+| `showDelta`                  | Whether or not to show the change from the last measurement <br> **Default value:** `true`
 
 ## Config Example
 
