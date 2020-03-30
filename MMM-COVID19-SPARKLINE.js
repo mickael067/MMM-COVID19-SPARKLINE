@@ -324,6 +324,8 @@ Module.register("MMM-COVID19-SPARKLINE", {
         headerrecoveredCell = document.createElement("td"),
         headerdeathsCell = document.createElement("td"),
         headergraphCell = document.createElement("td")
+        headerdgraphCell = document.createElement("td")
+
 
     headerCountryNameCell.innerHTML = ''
 
@@ -334,7 +336,9 @@ Module.register("MMM-COVID19-SPARKLINE", {
     headerrecoveredCell.className = 'number recovered ' + this.config.headerRowClass
     headerrecoveredCell.innerHTML = 'Recovered'
     headergraphCell.className = 'number ' + this.config.headerRowClass
-    headergraphCell.innerHTML = 'Plot'
+    headergraphCell.innerHTML = 'Daily Plot'
+    headerdgraphCell.className = 'number ' + this.config.headerRowClass
+    headerdgraphCell.innerHTML = 'Delta Plot'
 
     headerRow.appendChild(headerCountryNameCell)
 
@@ -349,6 +353,9 @@ Module.register("MMM-COVID19-SPARKLINE", {
     }
     if (this.config.sparklines == true) {
       headerRow.appendChild(headergraphCell);
+      if (this.config.showDelta == true) {
+        headerRow.appendChild(headerdgraphCell);
+      }
     }
 
     wrapper.appendChild(headerRow)
@@ -370,6 +377,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
           d_deathsCell = document.createElement("td"),
           d_recoveredCell = document.createElement("td"),
           d_graphCell = document.createElement("td"),
+          d_padCell = document.createElement("td"),
 
           confirmed = globalStats.worldwide.series[lastdate].confirmed,
           deaths = globalStats.worldwide.series[lastdate].deaths,
@@ -427,10 +435,17 @@ Module.register("MMM-COVID19-SPARKLINE", {
         d_worldRow.appendChild(d_recoveredCell);
       }
       if (this.config.sparklines == true) {
+        //render daily plot
         graphCell.appendChild(this.getChart(globalStats.worldwide));
         worldRow.appendChild(graphCell);
+        d_worldRow.appendChild(d_padCell);
+        //render daily delta plot
         d_graphCell.appendChild(this.getChart(globalStats.worldwide, true));
-        d_worldRow.appendChild(d_graphCell);
+        //put the d_graph at the end of the primary row to save space
+        if (this.config.showDelta == true) {
+          worldRow.appendChild(d_graphCell);
+          d_worldRow.appendChild(d_padCell.cloneNode(true));
+        }
       }
 
       wrapper.appendChild(worldRow)
@@ -454,13 +469,14 @@ Module.register("MMM-COVID19-SPARKLINE", {
             deathsCell = document.createElement("td"),
             recoveredCell = document.createElement("td"),
             graphCell = document.createElement("td"),
+            d_graphCell = document.createElement("td"),
 
             d_countryRow = document.createElement("tr"),
             d_countryNameCell = document.createElement("td"),
             d_confirmedCell = document.createElement("td"),
             d_deathsCell = document.createElement("td"),
             d_recoveredCell = document.createElement("td"),
-            d_graphCell = document.createElement("td"),
+            d_padCell = document.createElement("td"),
 
             confirmed = stats.confirmed;
             deaths = stats.deaths;
@@ -495,6 +511,8 @@ Module.register("MMM-COVID19-SPARKLINE", {
         d_graphCell.className = 'sparkline';
         d_graphCell.innerHTML = '';
 
+        d_padCell.className = "micro";
+
         countryRow.appendChild(countryNameCell)
         d_countryRow.appendChild(d_countryNameCell)   /* empty */
 
@@ -514,11 +532,18 @@ Module.register("MMM-COVID19-SPARKLINE", {
           /* find the history data with the correct name */
           /* and plot the contents */
           var summaryrow = this.getSummaryRow(countryName);
+          //render daily chart
           graphCell.appendChild(this.getChart(summaryrow));
           countryRow.appendChild(graphCell);
+          d_countryRow.appendChild(d_padCell);
 
+          //render daily delta chart
           d_graphCell.appendChild(this.getChart(summaryrow, true));
-          d_countryRow.appendChild(d_graphCell);
+
+          if (this.config.showDelta == true) {
+            countryRow.appendChild(d_graphCell);  //put delta graph at end of normal row for space savings
+            d_countryRow.appendChild(d_padCell.cloneNode(true));  //need a padding cell for this graph if deltas are shown
+          }
         }        
 
         wrapper.appendChild(countryRow);

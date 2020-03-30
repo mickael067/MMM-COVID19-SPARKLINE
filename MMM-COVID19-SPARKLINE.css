@@ -6,8 +6,19 @@
   font-size: 14px;
 }
 
+table.covid {
+}
+
+td.covid {
+}
+
 .covid .micro {
   font-size: 12px;
+  line-height: normal;
+}
+
+td.micro {
+  vertical-align: top;
 }
 
 
