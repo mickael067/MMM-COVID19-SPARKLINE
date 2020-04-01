@@ -402,17 +402,17 @@ Module.register("MMM-COVID19-SPARKLINE", {
       confirmedCell.className = 'number confirmed ' + this.config.infoRowClass
       confirmedCell.innerHTML = confirmed
       d_confirmedCell.className = 'number confirmed micro'
-      d_confirmedCell.innerHTML = this.decorateNumber(d_confirmed) + this.getPercentageChg(confirmed/(confirmed-d_confirmed));
+      d_confirmedCell.innerHTML = this.decorateNumber(d_confirmed) + " " + this.getPercentageChg(confirmed/(confirmed-d_confirmed));
 
       deathsCell.className = 'number deaths ' + this.config.infoRowClass
       deathsCell.innerHTML = deaths
       d_deathsCell.className = 'number deaths micro'
-      d_deathsCell.innerHTML = this.decorateNumber(d_deaths) + this.getPercentageChg(deaths/(deaths-d_deaths));
+      d_deathsCell.innerHTML = this.decorateNumber(d_deaths) + " " + this.getPercentageChg(deaths/(deaths-d_deaths));
 
       recoveredCell.className = 'number recovered ' + this.config.infoRowClass
       recoveredCell.innerHTML = recovered
       d_recoveredCell.className = 'number recovered micro'
-      d_recoveredCell.innerHTML = this.decorateNumber(d_recovered) + this.getPercentageChg(recovered/(recovered-d_recovered));
+      d_recoveredCell.innerHTML = this.decorateNumber(d_recovered) + " " + this.getPercentageChg(recovered/(recovered-d_recovered));
 
       graphCell.className = ''
       graphCell.innerHTML = ''
@@ -437,14 +437,16 @@ Module.register("MMM-COVID19-SPARKLINE", {
       if (this.config.sparklines == true) {
         //render daily plot
         graphCell.appendChild(this.getChart(globalStats.worldwide));
+        if (this.config.showDelta == true) {
+          graphCell.setAttribute("rowspan", "2");
+        }
         worldRow.appendChild(graphCell);
-        d_worldRow.appendChild(d_padCell);
         //render daily delta plot
         d_graphCell.appendChild(this.getChart(globalStats.worldwide, true));
         //put the d_graph at the end of the primary row to save space
         if (this.config.showDelta == true) {
+          d_graphCell.setAttribute("rowspan", "2");
           worldRow.appendChild(d_graphCell);
-          d_worldRow.appendChild(d_padCell.cloneNode(true));
         }
       }
 
@@ -494,17 +496,17 @@ Module.register("MMM-COVID19-SPARKLINE", {
         confirmedCell.className = 'number confirmed ' + this.config.infoRowClass;
         confirmedCell.innerHTML = confirmed;
         d_confirmedCell.className = 'number confirmed micro';
-        d_confirmedCell.innerHTML = this.decorateNumber(d_confirmed) + this.getPercentageChg(confirmed/(confirmed-d_confirmed));
+        d_confirmedCell.innerHTML = this.decorateNumber(d_confirmed) + " " + this.getPercentageChg(confirmed/(confirmed-d_confirmed));
 
         deathsCell.className = 'number deaths ' + this.config.infoRowClass;
         deathsCell.innerHTML = deaths;
         d_deathsCell.className = 'number deaths micro';
-        d_deathsCell.innerHTML = this.decorateNumber(d_deaths) + this.getPercentageChg(deaths/(deaths-d_deaths));
+        d_deathsCell.innerHTML = this.decorateNumber(d_deaths) + " " + this.getPercentageChg(deaths/(deaths-d_deaths));
 
         recoveredCell.className = 'number recovered ' + this.config.infoRowClass;
         recoveredCell.innerHTML = recovered;
         d_recoveredCell.className = 'number recovered micro';
-        d_recoveredCell.innerHTML = this.decorateNumber(d_recovered) + this.getPercentageChg(recovered/(recovered-d_recovered));
+        d_recoveredCell.innerHTML = this.decorateNumber(d_recovered) + " " + this.getPercentageChg(recovered/(recovered-d_recovered));
 
         graphCell.className = 'sparkline';
         graphCell.innerHTML = '';
@@ -534,15 +536,17 @@ Module.register("MMM-COVID19-SPARKLINE", {
           var summaryrow = this.getSummaryRow(countryName);
           //render daily chart
           graphCell.appendChild(this.getChart(summaryrow));
+          if (this.config.showDelta == true) {
+            graphCell.setAttribute("rowspan", "2");
+          }
           countryRow.appendChild(graphCell);
-          d_countryRow.appendChild(d_padCell);
 
           //render daily delta chart
           d_graphCell.appendChild(this.getChart(summaryrow, true));
 
           if (this.config.showDelta == true) {
+            d_graphCell.setAttribute("rowspan", "2");
             countryRow.appendChild(d_graphCell);  //put delta graph at end of normal row for space savings
-            d_countryRow.appendChild(d_padCell.cloneNode(true));  //need a padding cell for this graph if deltas are shown
           }
         }        
 

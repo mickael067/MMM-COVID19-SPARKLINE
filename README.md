@@ -10,7 +10,7 @@ This work is a combination of two other plugins:
 * [MMM-COVID-19](https://github.com/eouia/MMM-COVID-19) by Seongnoh Sean Yi
   * This plugin uses GitHub as a backend, the same data source that is used by the famous [Johns Hopkins Map](https://coronavirus.jhu.edu/map.html).  I prefer the use of this data source.
 
-At the end of the day, I decided to merge the two appraoches to get what I wanted.
+At the end of the day, I decided to merge the two appraoches to get what I wanted, adding the use of the awesome highcharts.js to get sparkline plots after the data.
 
 ![Example](images/screenshot.png)
 
@@ -72,7 +72,7 @@ The following properties can be configured:
         worldStats: true,
         sparklines: true,
         sparklineWidth: 100,
-        sparklineHeight: 35,
+        sparklineHeight: 55,
         sparklineDays: 30,
         sortby: "confirmed",
         columns: ["confirmed", "deaths", "recovered"],
