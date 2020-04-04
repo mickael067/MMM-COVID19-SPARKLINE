@@ -84,7 +84,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
    * 1. name:  this is the name of the country
    * 2. series:  summary of confirmed/deaths for each day
    */
-  getChart: function(rawdata, plotdelta=false) {
+  getChart: function(rawdata, plottype="dailyvstime") {
     var chart = document.createElement("div");
     var startidx = 0;
     var plotseries = [{name: '', data:[]}, {name: '', data:[]}, {name: '', data:[]}];  /* empty series to get started */
@@ -104,7 +104,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
 
     /* create a new series object given the raw data */
     /* notice, these are stacked in a way that makes the colors more visible */
-    if (plotdelta == false) {
+    if (plottype == "dailyvstime") {
       for (var i=startidx; i<dates.length; i++)
       {
         var d = Date.parse(dates[i]);
@@ -119,7 +119,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
         }
       }
     }
-    else {
+    else if (plottype == "dailydeltavstime") {
       for (var i=startidx; i<dates.length; i++)
       {
         var d = Date.parse(dates[i]);
@@ -133,6 +133,16 @@ Module.register("MMM-COVID19-SPARKLINE", {
           plotseries[2].data.push([d.valueOf(), rawdata.series[dates[i]].d_deaths]);
         }
       }
+    }
+    else if (plottype == "deltavsdaily") {
+      for (var i=startidx; i<dates.length; i++)
+      {
+        var d = Date.parse(dates[i]);
+        plotseries[0].data.push([rawdata.series[dates[i]].confirmed, rawdata.series[dates[i]].d_confirmed]);
+      }
+    }
+    else {
+      /* nothing to do, wrong specification */
     }
 
     /* render directly to chart div */
@@ -436,13 +446,13 @@ Module.register("MMM-COVID19-SPARKLINE", {
       }
       if (this.config.sparklines == true) {
         //render daily plot
-        graphCell.appendChild(this.getChart(globalStats.worldwide));
+        graphCell.appendChild(this.getChart(globalStats.worldwide, "dailyvstime"));
         if (this.config.showDelta == true) {
           graphCell.setAttribute("rowspan", "2");
         }
         worldRow.appendChild(graphCell);
         //render daily delta plot
-        d_graphCell.appendChild(this.getChart(globalStats.worldwide, true));
+        d_graphCell.appendChild(this.getChart(globalStats.worldwide, "dailydeltavstime"));
         //put the d_graph at the end of the primary row to save space
         if (this.config.showDelta == true) {
           d_graphCell.setAttribute("rowspan", "2");
@@ -535,14 +545,14 @@ Module.register("MMM-COVID19-SPARKLINE", {
           /* and plot the contents */
           var summaryrow = this.getSummaryRow(countryName);
           //render daily chart
-          graphCell.appendChild(this.getChart(summaryrow));
+          graphCell.appendChild(this.getChart(summaryrow, "dailyvstime"));
           if (this.config.showDelta == true) {
             graphCell.setAttribute("rowspan", "2");
           }
           countryRow.appendChild(graphCell);
 
           //render daily delta chart
-          d_graphCell.appendChild(this.getChart(summaryrow, true));
+          d_graphCell.appendChild(this.getChart(summaryrow, "dailydeltavstime"));
 
           if (this.config.showDelta == true) {
             d_graphCell.setAttribute("rowspan", "2");
