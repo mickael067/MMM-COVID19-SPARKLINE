@@ -45,7 +45,12 @@ td.micro {
 .covid td.active {
   color: orange;
 }
+
 .covid tr.world {
+  border-bottom: 3px double grey;
+}
+
+.covid td.world {
   border-bottom: 3px double grey;
 }
 

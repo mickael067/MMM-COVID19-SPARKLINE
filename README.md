@@ -12,7 +12,27 @@ This work is a combination of two other plugins:
 
 At the end of the day, I decided to merge the two appraoches to get what I wanted, adding the use of the awesome highcharts.js to get sparkline plots after the data.
 
+* sparklines on/off
+* line showing numeric delta change of each column
+* delta plot
+* weekly delta vs. total cases plot (see explanation below)
+* configurable column displays
+* configurable sparkline size
+* configurable number of days to plot in sparklines
+
+## Screenshot
+
 ![Example](images/screenshot.png)
+
+## sparklineDeltavsDaily = true
+
+New option added 4-April-2020.  This option was inspired by YouTube producer "[minutephysics](https://www.youtube.com/channel/UCUHW94eEFW7hkUMVaZz4eDg)", who proposes that plotting the total number of cases on the X axis and the weekly change in cases on the Y axis can help visualize whether or not we're winning the battle against COVID-19.  See his video [here](https://www.youtube.com/watch?v=54XLXg4fYsc).
+
+If you enable this option, the daily plot will no longer be shown.  Honestly, the daily plot is not that interesting, as it only shows that the rate of infection is exponential.  This plot at least gives you something to look for.
+
+This type of plot ignores the "sparklineDays" directive -- this type of plot always shows all available data.
+
+![Explanation of sparklineDeltavsDaily option](images/sparklineDeltavsDaily.png)
 
 ## Installation
 
@@ -61,6 +81,7 @@ The following properties can be configured:
 | `sparklineHeight`            | height of sparkline in px <br> **Default value:** `30`
 | `sparklineDays`              | Number of days to show in plot, specify 0 for all available days <br> **Default value:** `0`
 | `showDelta`                  | Whether or not to show the change from the last measurement <br> **Default value:** `false`
+| `sparklineDeltavsDaily`      | will show Delta vs Daily plot, see https://www.youtube.com/watch?v=54XLXg4fYsc <br> **Default value:** `false`
 
 ## Config Example
 
@@ -73,7 +94,8 @@ The following properties can be configured:
         sparklines: true,
         sparklineWidth: 100,
         sparklineHeight: 55,
-        sparklineDays: 30,
+        sparklineDays: 50,
+        sparklineDeltavsDaily: true, 
         sortby: "confirmed",
         columns: ["confirmed", "deaths", "recovered"],
         countries: ["US", "Italy", "Germany", "China", "Canada", "Mexico"],

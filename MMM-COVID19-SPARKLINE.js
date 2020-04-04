@@ -1,10 +1,16 @@
 /* global Module */
 
 /* Magic Mirror
- * Module: MMM-COVID19
+ * Module: MMM-COVID19-SPARKLINE
  *
- * By Jose Forte
+ * William Skellenger (@skelliam)
+ * Heavily influenced/borrowed from: 
+ *    [MMM-COVID19](https://github.com/bibaldo/MMM-COVID19) by Jose Forte
+ *    [MMM-COVID-19](https://github.com/eouia/MMM-COVID-19) by Seongnoh Sean Yi
+ *  
  * MIT Licensed.
+ * 
+ * 
  */
 
 Module.register("MMM-COVID19-SPARKLINE", {
@@ -26,8 +32,9 @@ Module.register("MMM-COVID19-SPARKLINE", {
     sparklineWidth: 120,
     sparklineHeight: 30,
     sparklineDays: 0,  // configure as zero to get ALL days
+    sparklineDeltavsDaily: false,  //will show Delta vs Daily plot in first position, see https://www.youtube.com/watch?v=54XLXg4fYsc
     sortby: "confirmed",  // the column to sort the output by
-    showDelta: false,     // whether or not to show change from last reading
+    showDelta: false,     // whether or not to show change from last reading, will also show delta plot if sparklines are on
   },
 
   getStyles: function() {
@@ -84,10 +91,17 @@ Module.register("MMM-COVID19-SPARKLINE", {
    * 1. name:  this is the name of the country
    * 2. series:  summary of confirmed/deaths for each day
    */
-  getChart: function(rawdata, plottype="dailyvstime") {
+  getChart: function(rawdata, plottype="dailytotalvstime") {
     var chart = document.createElement("div");
     var startidx = 0;
     var plotseries = [{name: '', data:[]}, {name: '', data:[]}, {name: '', data:[]}];  /* empty series to get started */
+    var xaxistype = '';
+    var yaxistype = '';
+    var xaxismin = 0;
+    var yaxismin = 0;
+    var xaxismax = null;
+    var yaxismax = null;
+
     chart.id = "covid19-sparkline-chart";
 
     if (rawdata == undefined)
@@ -97,14 +111,24 @@ Module.register("MMM-COVID19-SPARKLINE", {
 
     dates = Object.keys(rawdata.series);
 
-    if (this.config.sparklineDays != 0) {
-      startidx = dates.length-this.config.sparklineDays;
+    /* when plotting delta vs daily we will use all available data */
+    if (plottype == 'lastweekdeltavsdailytotal') {
+      startidx = 0;
     }
+    /* otherwise we will use the user-configured number of days */
+    else if (this.config.sparklineDays != 0) {
+      startidx = Math.max(dates.length-this.config.sparklineDays, 0);
+    }
+
 
 
     /* create a new series object given the raw data */
     /* notice, these are stacked in a way that makes the colors more visible */
-    if (plottype == "dailyvstime") {
+    if (plottype == "dailytotalvstime") {
+      xaxistype = 'datetime';
+      yaxistype = '';
+      xaxismin = null;
+      yaxismin = 0;
       for (var i=startidx; i<dates.length; i++)
       {
         var d = Date.parse(dates[i]);
@@ -119,7 +143,11 @@ Module.register("MMM-COVID19-SPARKLINE", {
         }
       }
     }
-    else if (plottype == "dailydeltavstime") {
+    else if (plottype == "deltavstime") {
+      xaxistype = 'datetime';
+      yaxistype = '';
+      xaxismin = null;
+      yaxismin = 0;
       for (var i=startidx; i<dates.length; i++)
       {
         var d = Date.parse(dates[i]);
@@ -134,12 +162,29 @@ Module.register("MMM-COVID19-SPARKLINE", {
         }
       }
     }
-    else if (plottype == "deltavsdaily") {
+    /* this type of plot inspired by https://www.youtube.com/watch?v=54XLXg4fYsc */
+    /* "How To Tell If We're Beating COVID-19" */
+    else if (plottype == "lastweekdeltavsdailytotal") {
+      xaxistype = 'logarithmic';
+      yaxistype = 'logarithmic';
+      xaxismin = 1;
+      yaxismin = 1;
+      xaxismax = 100000000;
+      console.log(rawdata.series);
       for (var i=startidx; i<dates.length; i++)
       {
         var d = Date.parse(dates[i]);
-        plotseries[0].data.push([rawdata.series[dates[i]].confirmed, rawdata.series[dates[i]].d_confirmed]);
+        var d_weekly = 0;
+        /* get weekly change in cases */
+        for (var j=0; j<7; j++)
+        {
+          idx = Math.max((i-j), 0);
+          d_weekly += rawdata.series[dates[idx]].d_confirmed;
+        }
+        /* zero or negative values not allowed in log chart */
+        plotseries[0].data.push([Math.max(rawdata.series[dates[i]].confirmed, 1), Math.max(d_weekly, 1)]);
       }
+      console.log(plotseries[0]);
     }
     else {
       /* nothing to do, wrong specification */
@@ -184,12 +229,16 @@ Module.register("MMM-COVID19-SPARKLINE", {
         },
       },
       xAxis: {
-        type: 'datetime',
+        type: xaxistype,
         visible: false,
+        min: xaxismin,
+        max: xaxismax,
       },
       yAxis: {
+        type: yaxistype,
         visible: false,
-        min: 0,
+        min: yaxismin,
+        max: yaxismax,
       },
       series: plotseries,
       credits: {
@@ -346,7 +395,14 @@ Module.register("MMM-COVID19-SPARKLINE", {
     headerrecoveredCell.className = 'number recovered ' + this.config.headerRowClass
     headerrecoveredCell.innerHTML = 'Recovered'
     headergraphCell.className = 'number ' + this.config.headerRowClass
-    headergraphCell.innerHTML = 'Daily Plot'
+    
+    if (this.config.sparklineDeltavsDaily == false) {
+      headergraphCell.innerHTML = 'Daily Plot';
+    }
+    else {
+      headergraphCell.innerHTML = 'Delta vs Daily';
+    }
+
     headerdgraphCell.className = 'number ' + this.config.headerRowClass
     headerdgraphCell.innerHTML = 'Delta Plot'
 
@@ -424,9 +480,9 @@ Module.register("MMM-COVID19-SPARKLINE", {
       d_recoveredCell.className = 'number recovered micro'
       d_recoveredCell.innerHTML = this.decorateNumber(d_recovered) + " " + this.getPercentageChg(recovered/(recovered-d_recovered));
 
-      graphCell.className = ''
+      graphCell.className = 'world'
       graphCell.innerHTML = ''
-      d_graphCell.className = ''
+      d_graphCell.className = 'world'
       d_graphCell.innerHTML = ''
 
       worldRow.appendChild(worldNameCell)
@@ -446,13 +502,18 @@ Module.register("MMM-COVID19-SPARKLINE", {
       }
       if (this.config.sparklines == true) {
         //render daily plot
-        graphCell.appendChild(this.getChart(globalStats.worldwide, "dailyvstime"));
+        if (this.config.sparklineDeltavsDaily == false) {
+          graphCell.appendChild(this.getChart(globalStats.worldwide, "dailytotalvstime"));
+        }
+        else {
+          graphCell.appendChild(this.getChart(globalStats.worldwide, "lastweekdeltavsdailytotal"));
+        }
         if (this.config.showDelta == true) {
           graphCell.setAttribute("rowspan", "2");
         }
         worldRow.appendChild(graphCell);
         //render daily delta plot
-        d_graphCell.appendChild(this.getChart(globalStats.worldwide, "dailydeltavstime"));
+        d_graphCell.appendChild(this.getChart(globalStats.worldwide, "deltavstime"));
         //put the d_graph at the end of the primary row to save space
         if (this.config.showDelta == true) {
           d_graphCell.setAttribute("rowspan", "2");
@@ -545,14 +606,20 @@ Module.register("MMM-COVID19-SPARKLINE", {
           /* and plot the contents */
           var summaryrow = this.getSummaryRow(countryName);
           //render daily chart
-          graphCell.appendChild(this.getChart(summaryrow, "dailyvstime"));
+          if (this.config.sparklineDeltavsDaily == false) {
+            graphCell.appendChild(this.getChart(summaryrow, "dailytotalvstime"));
+          }
+          else {
+            graphCell.appendChild(this.getChart(summaryrow, "lastweekdeltavsdailytotal"));
+          }
+
           if (this.config.showDelta == true) {
             graphCell.setAttribute("rowspan", "2");
           }
           countryRow.appendChild(graphCell);
 
           //render daily delta chart
-          d_graphCell.appendChild(this.getChart(summaryrow, "dailydeltavstime"));
+          d_graphCell.appendChild(this.getChart(summaryrow, "deltavstime"));
 
           if (this.config.showDelta == true) {
             d_graphCell.setAttribute("rowspan", "2");
