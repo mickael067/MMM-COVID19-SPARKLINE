@@ -1,5 +1,5 @@
 # MMM-COVID19-SPARKLINE
-A [MagicMirrorÂ²](https://magicmirror.builders) helper module to track reported cases of COVID-19 with sparkline plots.
+A [MagicMirror](https://magicmirror.builders) helper module to track reported cases of COVID-19 with sparkline plots.
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://raw.githubusercontent.com/skelliam/MMM-COVID19-SPARKLINE/master/LICENSE)
 
