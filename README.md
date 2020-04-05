@@ -10,7 +10,7 @@ This work is a combination of two other plugins:
 * [MMM-COVID-19](https://github.com/eouia/MMM-COVID-19) by Seongnoh Sean Yi
   * This plugin uses GitHub as a backend, the same data source that is used by the famous [Johns Hopkins Map](https://coronavirus.jhu.edu/map.html).  I prefer the use of this data source.
 
-At the end of the day, I decided to merge the two appraoches to get what I wanted, adding the use of the awesome highcharts.js to get sparkline plots after the data.
+At the end of the day, I decided to merge the two approaches to get what I wanted, adding the use of the awesome [highcharts.js](https://www.highcharts.com/) to get sparkline plots next to the daily totals.
 
 * sparklines on/off
 * line showing numeric delta change of each column
@@ -19,6 +19,7 @@ At the end of the day, I decided to merge the two appraoches to get what I wante
 * configurable column displays
 * configurable sparkline size
 * configurable number of days to plot in sparklines
+* configurable number delimiters (thanks @BrianHepler!)
 
 ## Screenshot
 
@@ -26,11 +27,11 @@ At the end of the day, I decided to merge the two appraoches to get what I wante
 
 ## sparklineDeltavsDaily = true
 
-New option added 4-April-2020.  This option was inspired by YouTube producer "[minutephysics](https://www.youtube.com/channel/UCUHW94eEFW7hkUMVaZz4eDg)", who proposes that plotting the total number of cases on the X axis and the weekly change in cases on the Y axis can help visualize whether or not we're winning the battle against COVID-19.  See his video [here](https://www.youtube.com/watch?v=54XLXg4fYsc).
+New option added 4-April-2020.  This option was inspired by YouTube producer [minutephysics](https://www.youtube.com/channel/UCUHW94eEFW7hkUMVaZz4eDg), who proposes plotting the total number of cases on the X-axis and the weekly change in cases on the Y-axis to help visualize whether or not we're winning the battle against COVID-19.  See his video [here](https://www.youtube.com/watch?v=54XLXg4fYsc).
 
-If you enable this option, the daily plot will no longer be shown.  Honestly, the daily plot is not that interesting, as it only shows that the rate of infection is exponential.  This plot at least gives you something to look for.
+If you enable this option, the daily plot will no longer be shown.  Honestly, the daily plot is not that interesting, as it only shows that the rate of infection is exponential.  This plot at least gives you something to look (hope) for.
 
-This type of plot ignores the "sparklineDays" directive -- this type of plot always shows all available data.
+Note: This type of plot ignores the "sparklineDays" directive; it always shows all available data.
 
 ![Explanation of sparklineDeltavsDaily option](images/sparklineDeltavsDaily.png)
 
@@ -111,10 +112,12 @@ The following properties can be configured:
 ````
 ## Updating
 
-To update the module to the latest version, use your terminal to go to your MMM-COVID19-SPARKLINE module folder and type the following command:
+To update the module to the latest version, use your terminal to go to your MMM-COVID19-SPARKLINE module folder and type the following commands:
 
 ````
+cd MMM-COVID19-SPARKLINE
 git pull
+npm install
 ```` 
 
 ## Development
