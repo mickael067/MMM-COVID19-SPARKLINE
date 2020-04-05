@@ -26,6 +26,8 @@ Module.register("MMM-COVID19-SPARKLINE", {
     worldStats: true,
     headerRowClass: "small", // small, medium or big
     infoRowClass: "medium", // small, medium or big
+    showDelimiter: false, // show the delimeter in numbers
+    delimiter: ",",  // delimiter character
     updateInterval: 10800000, // update interval in milliseconds, default value 3 hours
     fadeSpeed: 1000,
     sparklines: true,
@@ -257,6 +259,16 @@ Module.register("MMM-COVID19-SPARKLINE", {
     return chart.cloneNode(true);
   },
 
+  formatNumber: function(value) {
+    var output = "";
+    if (value >= 0 && this.config.showDelimiter) {
+         output = value.toString().replace(/\B(?<!\.\d*)(?=(\d{3})+(?!\d))/g, this.config.delimiter);
+    } else {
+        output = String(value);
+    }
+    return output;
+  },
+
   /* given a list of dates, get the value of the last one */
   getLastDateInSeries: function(dates) {
     var maxdatestring = dates[dates.length-1];
@@ -466,19 +478,19 @@ Module.register("MMM-COVID19-SPARKLINE", {
       d_worldRow.className = 'world ' + this.config.infoRowClass
 
       confirmedCell.className = 'number confirmed ' + this.config.infoRowClass
-      confirmedCell.innerHTML = confirmed
+      confirmedCell.innerHTML = this.formatNumber(confirmed);
       d_confirmedCell.className = 'number confirmed micro'
-      d_confirmedCell.innerHTML = this.decorateNumber(d_confirmed) + " " + this.getPercentageChg(confirmed/(confirmed-d_confirmed));
+      d_confirmedCell.innerHTML = this.decorateNumber(this.formatNumber(d_confirmed)) + " " + this.getPercentageChg(confirmed/(confirmed-d_confirmed));
 
       deathsCell.className = 'number deaths ' + this.config.infoRowClass
-      deathsCell.innerHTML = deaths
+      deathsCell.innerHTML = this.formatNumber(deaths);
       d_deathsCell.className = 'number deaths micro'
-      d_deathsCell.innerHTML = this.decorateNumber(d_deaths) + " " + this.getPercentageChg(deaths/(deaths-d_deaths));
+      d_deathsCell.innerHTML = this.decorateNumber(this.formatNumber(d_deaths)) + " " + this.getPercentageChg(deaths/(deaths-d_deaths));
 
       recoveredCell.className = 'number recovered ' + this.config.infoRowClass
-      recoveredCell.innerHTML = recovered
+      recoveredCell.innerHTML = this.formatNumber(recovered);
       d_recoveredCell.className = 'number recovered micro'
-      d_recoveredCell.innerHTML = this.decorateNumber(d_recovered) + " " + this.getPercentageChg(recovered/(recovered-d_recovered));
+      d_recoveredCell.innerHTML = this.decorateNumber(this.formatNumber(d_recovered)) + " " + this.getPercentageChg(recovered/(recovered-d_recovered));
 
       graphCell.className = 'world'
       graphCell.innerHTML = ''
@@ -565,19 +577,19 @@ Module.register("MMM-COVID19-SPARKLINE", {
         d_countryNameCell.className = 'micro';
 
         confirmedCell.className = 'number confirmed ' + this.config.infoRowClass;
-        confirmedCell.innerHTML = confirmed;
+        confirmedCell.innerHTML = this.formatNumber(confirmed);
         d_confirmedCell.className = 'number confirmed micro';
-        d_confirmedCell.innerHTML = this.decorateNumber(d_confirmed) + " " + this.getPercentageChg(confirmed/(confirmed-d_confirmed));
+        d_confirmedCell.innerHTML = this.decorateNumber(this.formatNumber(d_confirmed)) + " " + this.getPercentageChg(confirmed/(confirmed-d_confirmed));
 
         deathsCell.className = 'number deaths ' + this.config.infoRowClass;
-        deathsCell.innerHTML = deaths;
+        deathsCell.innerHTML = this.formatNumber(deaths);
         d_deathsCell.className = 'number deaths micro';
-        d_deathsCell.innerHTML = this.decorateNumber(d_deaths) + " " + this.getPercentageChg(deaths/(deaths-d_deaths));
+        d_deathsCell.innerHTML = this.decorateNumber(this.formatNumber(d_deaths)) + " " + this.getPercentageChg(deaths/(deaths-d_deaths));
 
         recoveredCell.className = 'number recovered ' + this.config.infoRowClass;
-        recoveredCell.innerHTML = recovered;
+        recoveredCell.innerHTML = this.formatNumber(recovered);
         d_recoveredCell.className = 'number recovered micro';
-        d_recoveredCell.innerHTML = this.decorateNumber(d_recovered) + " " + this.getPercentageChg(recovered/(recovered-d_recovered));
+        d_recoveredCell.innerHTML = this.decorateNumber(this.formatNumber(d_recovered)) + " " + this.getPercentageChg(recovered/(recovered-d_recovered));
 
         graphCell.className = 'sparkline';
         graphCell.innerHTML = '';

@@ -1,5 +1,5 @@
 # MMM-COVID19-SPARKLINE
-A [MagicMirror²](https://magicmirror.builders) helper module to track reported cases of COVID-19 with sparkline plots.
+A [MagicMirrorÂ²](https://magicmirror.builders) helper module to track reported cases of COVID-19 with sparkline plots.
 
 [![license](https://img.shields.io/github/license/mashape/apistatus.svg)](https://raw.githubusercontent.com/skelliam/MMM-COVID19-SPARKLINE/master/LICENSE)
 
@@ -82,6 +82,8 @@ The following properties can be configured:
 | `sparklineDays`              | Number of days to show in plot, specify 0 for all available days <br> **Default value:** `0`
 | `showDelta`                  | Whether or not to show the change from the last measurement <br> **Default value:** `false`
 | `sparklineDeltavsDaily`      | will show Delta vs Daily plot, see https://www.youtube.com/watch?v=54XLXg4fYsc <br> **Default value:** `false`
+| `showDelimiter`              | Will add number delimiters for easier reading. (34567 becomes 34,567) <br> **Default value: false**
+| `delimiter`                  | The character used as the number delimiter.<br> **Default value:** `","`
 
 ## Config Example
 
