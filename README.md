@@ -20,6 +20,7 @@ At the end of the day, I decided to merge the two approaches to get what I wante
 * configurable sparkline size
 * configurable number of days to plot in sparklines
 * configurable number delimiters (thanks @BrianHepler!)
+* configurable "n days" to sum in delta plot
 
 ## Screenshot
 
@@ -34,6 +35,15 @@ If you enable this option, the daily plot will no longer be shown.  Honestly, th
 Note: This type of plot ignores the "sparklineDays" directive; it always shows all available data.
 
 ![Explanation of sparklineDeltavsDaily option](images/sparklineDeltavsDaily.png)
+
+## showDeltaPlotNDays
+
+Has a smooothing effect on the graph, but also changes amplitude and causes a slight phase shift in the graph as each graph point is now the sum of the last (n) days (includng today).  This means that the higher you set this value, the longer it will take you to spot trends in the data.  That being said, this will help smooth out noise and prevent you from spotting false trends.
+
+In the below example, the left is the default value showDeltaPlotNDays=1, and the right is showDeltaPlotNDays=7.
+
+![Explanation of showDeltaPlotNDays option](images/showDeltaPlotNDays.png)
+
 
 ## Installation
 
@@ -82,6 +92,7 @@ The following properties can be configured:
 | `sparklineHeight`            | height of sparkline in px <br> **Default value:** `30`
 | `sparklineDays`              | Number of days to show in plot, specify 0 for all available days <br> **Default value:** `0`
 | `showDelta`                  | Whether or not to show the change from the last measurement <br> **Default value:** `false`
+| `showDeltaPlotNDays`         | For the delta plot, show the plot as a sum of the previous n days.  This will smooth the graph. <br> **Default value:** '1'
 | `sparklineDeltavsDaily`      | will show Delta vs Daily plot, see https://www.youtube.com/watch?v=54XLXg4fYsc <br> **Default value:** `false`
 | `showDelimiter`              | Will add number delimiters for easier reading. (34567 becomes 34,567) <br> **Default value: false**
 | `delimiter`                  | The character used as the number delimiter.<br> **Default value:** `","`
@@ -107,6 +118,8 @@ The following properties can be configured:
         headerRowClass: "small",
         fadeSpeed: 1000,
         showDelta: true,
+        showDeltaPlotNDays: 7,
+        showDelimiter: true
       }
     },
 ````

@@ -37,6 +37,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
     sparklineDeltavsDaily: false,  //will show Delta vs Daily plot in first position, see https://www.youtube.com/watch?v=54XLXg4fYsc
     sortby: "confirmed",  // the column to sort the output by
     showDelta: false,     // whether or not to show change from last reading, will also show delta plot if sparklines are on
+    showDeltaPlotNDays: 1,     // for the delta plot, show the plot as a sum of the previous n days.  This can smooth the graph somewhat.
   },
 
   getStyles: function() {
@@ -153,14 +154,27 @@ Module.register("MMM-COVID19-SPARKLINE", {
       for (var i=startidx; i<dates.length; i++)
       {
         var d = Date.parse(dates[i]);
+        var d_sum_confirmed = 0;
+        var d_sum_recovered = 0;
+        var d_sum_deaths = 0;
+
+        for (var j=0; j<Math.max(this.config.showDeltaPlotNDays,1); j++)
+        {
+          idx = Math.max((i-j), 0);
+
+          d_sum_confirmed += rawdata.series[dates[idx]].d_confirmed;
+          d_sum_recovered += rawdata.series[dates[idx]].d_recovered;
+          d_sum_deaths += rawdata.series[dates[idx]].d_deaths;
+        }
+
         if (this.config.columns.includes("confirmed")) {
-          plotseries[0].data.push([d.valueOf(), rawdata.series[dates[i]].d_confirmed]);
+          plotseries[0].data.push([d.valueOf(), d_sum_confirmed]);
         }
         if (this.config.columns.includes("recovered")) {
-          plotseries[1].data.push([d.valueOf(), rawdata.series[dates[i]].d_recovered]);
+          plotseries[1].data.push([d.valueOf(), d_sum_recovered]);
         }
         if (this.config.columns.includes("deaths")) {
-          plotseries[2].data.push([d.valueOf(), rawdata.series[dates[i]].d_deaths]);
+          plotseries[2].data.push([d.valueOf(), d_sum_deaths]);
         }
       }
     }
@@ -417,7 +431,17 @@ Module.register("MMM-COVID19-SPARKLINE", {
     }
 
     headerdgraphCell.className = 'number ' + this.config.headerRowClass
-    headerdgraphCell.innerHTML = 'Delta Plot'
+    /* show number of days in plot title */
+    /* user cannot configure lower than one day */
+    var ndays = Math.max(this.config.showDeltaPlotNDays, 1);
+    if (ndays > 1) {
+      ndays = " (" + String(ndays) + "d)";
+    }
+    else {
+      /* if default of one is chosen, don't show anything */
+      ndays = ''
+    }
+    headerdgraphCell.innerHTML = 'Delta Plot' + ndays
 
     headerRow.appendChild(headerCountryNameCell)
 
