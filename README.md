@@ -44,6 +44,15 @@ In the below example, the left is the default value showDeltaPlotNDays=1, and th
 
 ![Explanation of showDeltaPlotNDays option](images/showDeltaPlotNDays.png)
 
+## sparklineDeathScale
+
+By setting this to -1, you can plot deaths below the x axis.  If you set this to a higher negative number, like -4, the death count will be amplified and more visible in the plot.
+
+Default value:  ```sparklineDeathScale = 1```
+
+![Explanation of sparklineDeathScale option](images/sparklineDeathScale.png)
+
+
 
 ## Installation
 
@@ -92,8 +101,9 @@ The following properties can be configured:
 | `sparklineHeight`            | height of sparkline in px <br> **Default value:** `30`
 | `sparklineDays`              | Number of days to show in plot, specify 0 for all available days <br> **Default value:** `0`
 | `showDelta`                  | Whether or not to show the change from the last measurement <br> **Default value:** `false`
-| `showDeltaPlotNDays`         | For the delta plot, show the plot as a sum of the previous n days.  This will smooth the graph. <br> **Default value:** '1'
+| `showDeltaPlotNDays`         | For the delta plot, show the plot as a sum of the previous n days.  This will smooth the graph. <br> **Default value:** `1`
 | `sparklineDeltavsDaily`      | will show Delta vs Daily plot, see https://www.youtube.com/watch?v=54XLXg4fYsc <br> **Default value:** `false`
+| `sparklineDeathScale`        | scaling factor to apply to deaths.  Use -1 to show deaths plotted below the x axis.  Use a higher number to accentuate/amplify the deaths plot for better visibility.<br>**Default value:** `1`
 | `showDelimiter`              | Will add number delimiters for easier reading. (34567 becomes 34,567) <br> **Default value: false**
 | `delimiter`                  | The character used as the number delimiter.<br> **Default value:** `","`
 
@@ -119,6 +129,7 @@ The following properties can be configured:
         fadeSpeed: 1000,
         showDelta: true,
         showDeltaPlotNDays: 7,
+        sparklineDeathScale: -4,
         showDelimiter: true
       }
     },

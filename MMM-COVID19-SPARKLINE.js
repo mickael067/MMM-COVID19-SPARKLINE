@@ -35,6 +35,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
     sparklineHeight: 30,
     sparklineDays: 0,  // configure as zero to get ALL days
     sparklineDeltavsDaily: false,  //will show Delta vs Daily plot in first position, see https://www.youtube.com/watch?v=54XLXg4fYsc
+	 sparklineDeathScale: 1,        //show the deaths curve with this scaling; use negative number to show deaths inverted
     sortby: "confirmed",  // the column to sort the output by
     showDelta: false,     // whether or not to show change from last reading, will also show delta plot if sparklines are on
     showDeltaPlotNDays: 1,     // for the delta plot, show the plot as a sum of the previous n days.  This can smooth the graph somewhat.
@@ -131,7 +132,13 @@ Module.register("MMM-COVID19-SPARKLINE", {
       xaxistype = 'datetime';
       yaxistype = '';
       xaxismin = null;
-      yaxismin = 0;
+		if (this.config.sparklineDeathScale < 0) {
+	   	yaxismin = null;
+		}
+		else {
+			yaxismin = 0
+		}
+
       for (var i=startidx; i<dates.length; i++)
       {
         var d = Date.parse(dates[i]);
@@ -142,7 +149,8 @@ Module.register("MMM-COVID19-SPARKLINE", {
           plotseries[1].data.push([d.valueOf(), rawdata.series[dates[i]].recovered]);
         }
         if (this.config.columns.includes("deaths")) {
-          plotseries[2].data.push([d.valueOf(), rawdata.series[dates[i]].deaths]);
+		    var scaled_death = rawdata.series[dates[i]].deaths * this.config.sparklineDeathScale;
+          plotseries[2].data.push([d.valueOf(), scaled_death]);
         }
       }
     }
@@ -150,7 +158,14 @@ Module.register("MMM-COVID19-SPARKLINE", {
       xaxistype = 'datetime';
       yaxistype = '';
       xaxismin = null;
-      yaxismin = 0;
+
+		if (this.config.sparklineDeathScale < 0) {
+	   	yaxismin = null;
+		}
+		else {
+			yaxismin = 0
+		}
+
       for (var i=startidx; i<dates.length; i++)
       {
         var d = Date.parse(dates[i]);
@@ -164,7 +179,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
 
           d_sum_confirmed += rawdata.series[dates[idx]].d_confirmed;
           d_sum_recovered += rawdata.series[dates[idx]].d_recovered;
-          d_sum_deaths += rawdata.series[dates[idx]].d_deaths;
+          d_sum_deaths += rawdata.series[dates[idx]].d_deaths * this.config.sparklineDeathScale;
         }
 
         if (this.config.columns.includes("confirmed")) {
@@ -253,6 +268,7 @@ Module.register("MMM-COVID19-SPARKLINE", {
       },
       yAxis: {
         type: yaxistype,
+		  startOnTick: false,
         visible: false,
         min: yaxismin,
         max: yaxismax,
